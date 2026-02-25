@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { StorachaService } from "@/lib/storacha";
 import { UcanService } from "@/lib/ucan";
 import ArchitectureFlow from "./components/ArchitectureFlow";
+import DevToolVisualizer, { DevToolVisualizerRef } from "./components/DevToolVisualizer";
 
 export default function Home() {
+  const devToolRef = useRef<DevToolVisualizerRef>(null);
+
   const [publicMemory, setPublicMemory] = useState("");
   const [storachaCid, setStorachaCid] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -20,32 +23,52 @@ export default function Home() {
   const handleUpload = async () => {
     if (!publicMemory) return;
     setIsUploading(true);
+    devToolRef.current?.addLog("SYSTEM", "Initiating Storacha upload flow...");
     try {
-      // In a real app, this would use the browser-linked Storacha space
-      // For this demo, we'll simulate the response based on our library
+      // Simulation
       const cid = "bafybeigh4mvdjagffgry2kcdykahpibhnvv3pzs5bbgaeu7v5olsxafeyqy";
       setStorachaCid(cid);
+      devToolRef.current?.triggerAnimation("upload");
+      devToolRef.current?.addLog("STORACHA", `Memory stored! CID: ${cid.slice(0, 10)}...`);
     } catch (err) {
-      console.error(err);
+      devToolRef.current?.addLog("SYSTEM", "Error during Storacha upload.");
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleIdentity = async () => {
+    devToolRef.current?.addLog("SYSTEM", "Generating cryptographic identity...");
     const id = await UcanService.createIdentity();
     setMasterDid(id.did());
+    devToolRef.current?.addLog("UCAN", `Identity generated: ${id.did().slice(0, 20)}...`);
+  };
+
+  const handleIssueUcan = () => {
+    if (!masterDid || !subDid) {
+      devToolRef.current?.addLog("SYSTEM", "Missing DID for UCAN delegation.");
+      return;
+    }
+    setUcanCid("bafy...delegation");
+    devToolRef.current?.triggerAnimation("auth");
+    devToolRef.current?.addLog("UCAN", `Delegation issued from Master to Sub-Agent.`);
   };
 
   const handleZama = () => {
-    // Simulate Zama Transaction
+    if (!secretVal) return;
+    devToolRef.current?.addLog("SYSTEM", "Requesting Zama FHE encryption...");
     setZamaRef("0x5FbDB2315678... (FHE Encrypted)");
+    devToolRef.current?.triggerAnimation("encrypt");
+    devToolRef.current?.addLog("ZAMA", "Confidential state stored on-chain with FHE proof.");
   };
 
   return (
     <div>
+      {/* Dev Tool Visualizer (Top) */}
+      <DevToolVisualizer ref={devToolRef} />
+
       {/* Stats Bar */}
-      <div className="stats-grid">
+      <div className="stats-grid" style={{ marginTop: '2rem' }}>
         <div className="stat-card">
           <div className="stat-label">Public Memory</div>
           <div className="stat-value">{storachaCid ? "1" : "0"}</div>
@@ -117,7 +140,7 @@ export default function Home() {
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button className="secondary" onClick={handleIdentity}>New Identity</button>
-            <button onClick={() => setUcanCid("bafy...delegation")}>Issue UCAN</button>
+            <button onClick={handleIssueUcan}>Issue UCAN</button>
           </div>
           {ucanCid && (
             <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--primary)' }}>
@@ -151,7 +174,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* In-App Visualization */}
       <ArchitectureFlow />
 
       <footer style={{ marginTop: '5rem', textAlign: 'center', opacity: 0.5, fontSize: '0.8rem' }}>
@@ -160,4 +182,5 @@ export default function Home() {
     </div>
   );
 }
+
 
