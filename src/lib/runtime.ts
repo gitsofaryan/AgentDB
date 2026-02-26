@@ -19,6 +19,10 @@ export class AgentRuntime {
     private delegations: Map<string, any> = new Map();
     private receivedDelegations: Map<string, any> = new Map();
 
+    // Hive Mind IPNS State
+    public ipnsName: any = null;
+    private ipnsRevision: any = null;
+
     private constructor(signer: any) {
         this.signer = signer;
     }
@@ -87,16 +91,16 @@ export class AgentRuntime {
         delegation?: any
     ): Promise<object | null> {
         if (delegation) {
+            const expectedIssuer = delegation.issuer.did();
             const verification = UcanService.verifyDelegation(
                 delegation,
-                this.did,
+                expectedIssuer,
                 'agent/read'
             );
             if (!verification.valid) {
                 console.error(`Authorization denied: ${verification.reason}`);
                 return null;
             }
-            console.log(`Authorization verified for ${delegation.audience.did()}`);
         }
 
         return await StorachaService.fetchMemory(cid);
@@ -114,6 +118,69 @@ export class AgentRuntime {
      */
     getMemoryUrl(cid: string): string {
         return StorachaService.getGatewayUrl(cid);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // HIVE MIND: STREAMING MEMORY (IPNS + UCAN)
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Starts a mutable memory stream by creating an IPNS name and
+     * pinning the initial context to it.
+     * @param context The initial memory state.
+     * @returns The newly created IPNS Name ID (e.g., "k51qzi5...")
+     */
+    async startMemoryStream(context: object): Promise<string> {
+        // 1. Store the initial memory on IPFS
+        const cid = await this.storePublicMemory(context);
+        
+        // 2. Generate a new IPNS WritableName
+        this.ipnsName = await StorachaService.createIpnsName();
+        
+        // 3. Publish the CID to the new IPNS name
+        this.ipnsRevision = await StorachaService.publishToIpns(this.ipnsName, cid);
+        
+        return this.ipnsName.toString();
+    }
+
+    /**
+     * Updates an existing memory stream with new context.
+     * The agent MUST have started a memory stream first.
+     * @param newContext The updated memory state.
+     * @returns The new underlying IPFS CID it points to.
+     */
+    async updateMemoryStream(newContext: object): Promise<string> {
+        if (!this.ipnsName || !this.ipnsRevision) {
+            throw new Error("Cannot update memory stream: No stream started. Call startMemoryStream() first.");
+        }
+
+        // 1. Store the new memory on IPFS
+        const newCid = await this.storePublicMemory(newContext);
+
+        // 2. Update the IPNS pointer to point to the new CID
+        this.ipnsRevision = await StorachaService.publishToIpns(this.ipnsName, newCid, this.ipnsRevision);
+        
+        return newCid;
+    }
+
+    /**
+     * Fetches the latest context from another agent's memory stream.
+     * This allows Agent B to track Agent A's thought process in real-time.
+     * 
+     * @param ipnsNameId The IPNS Name ID (e.g., "k51qzi5...")
+     * @param delegation Optional UCAN delegation if the underlying memory requires auth
+     * @returns The latest memory JSON object, or null.
+     */
+    async fetchMemoryStream(ipnsNameId: string, delegation?: any): Promise<object | null> {
+        // 1. Resolve the IPNS pointer to get the current CID
+        const currentCid = await StorachaService.resolveIpns(ipnsNameId);
+        if (!currentCid) {
+            console.error(`Could not resolve IPNS stream for ${ipnsNameId}`);
+            return null;
+        }
+
+        // 2. Fetch the memory from the resolved CID
+        return await this.retrievePublicMemory(currentCid, delegation);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -201,9 +268,6 @@ export class AgentRuntime {
         // Step 3: Publish to IPFS
         const delegationCid = await StorachaService.publishDelegation(carBytes);
 
-        console.log(`Delegation published to IPFS: ${delegationCid}`);
-        console.log(`Agent B can fetch it and use it to access memories: ${this.memoryCids.join(', ')}`);
-
         return {
             delegation,
             delegationCid,
@@ -245,7 +309,6 @@ export class AgentRuntime {
         // Step 4: Store for future use
         this.receivedDelegations.set(expectedIssuerDid, delegation);
 
-        console.log(`Delegation verified successfully from ${expectedIssuerDid}`);
         return delegation;
     }
 

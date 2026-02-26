@@ -1,11 +1,48 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { UcanService } from '../lib/ucan.js';
 import { StorachaService } from '../lib/storacha.js';
 
 const app = express();
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+
+// 1. Strict CORS Lockdowns
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',') 
+    : ['http://localhost:3000']; // Default to strict frontend-only
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests from agents)
+        if (!origin) { return callback(null, true); }
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    methods: ['GET', 'POST']
+}));
+
+// 2. Strict Payload Limits (Prevent DOS via massive JSON uploads)
+app.use(express.json({ limit: '2mb' }));
+
+// 3. API Rate Limiting Lookdowns
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 reqs
+    message: { error: 'Too many queries from this IP, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const uploadLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 30, // Limit each IP to 30 pinning requests to prevent Storacha spam
+    message: { error: 'Memory upload limit exceeded. Please limit your agent indexing requests.' }
+});
+
+app.use(globalLimiter);
 
 // ═══════════════════════════════════════════════════════════════════
 // REGISTRY & STORAGE (In production, this is a database e.g., PostgreSQL)
@@ -74,7 +111,7 @@ app.get('/api/skills', (_req, res) => {
  * In a production architecture, the server acts ONLY as a pinning service or indexer.
  * It does NOT hold private keys.
  */
-app.post('/api/memory', async (req, res) => {
+app.post('/api/memory', uploadLimiter, async (req: express.Request, res: express.Response) => {
     const { did, context, visibility = 'private', name, description } = req.body;
 
     if (!did || !context) {
@@ -216,7 +253,7 @@ app.get('/api/memory/:cid', async (req, res) => {
  * An agent submits a pre-signed UCAN delegation token to grant access to another agent.
  * The server DOES NOT sign this. The client SDK signs it using the user's wallet/DID.
  */
-app.post('/api/delegations', async (req, res) => {
+app.post('/api/delegations', uploadLimiter, async (req: express.Request, res: express.Response) => {
     const { ucanBase64, memoryCids = [] } = req.body;
 
     if (!ucanBase64) {

@@ -1,19 +1,39 @@
 {
-  "name": "agent-db",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@arienjain/agent-db",
+  "version": "1.1.1",
+  "description": "Persistent, encrypted, and permission-controlled memory for autonomous AI agents.",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "test": "npx tsx run-integration-test.ts",
+    "build": "tsup src/lib/index.ts --format cjs --format esm",
+    "test": "vitest run tests/",
     "test:hardhat": "npx hardhat test",
     "server": "npx tsx src/server/index.ts",
-    "demo:transport": "npx tsx src/demos/ucan-transport.ts",
-    "demo:api": "npx tsx src/demos/api-gateway-flow.ts",
-    "demo:platform": "npx tsx src/demos/public-skills-flow.ts"
+    "lint": "eslint src --ext .ts",
+    "demo": "npx tsx src/demo-cli.ts"
   },
+  "readme": "README_NPM.md",
+  "files": [
+    "dist",
+    "README_NPM.md"
+  ],
   "type": "module",
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "ai",
+    "agents",
+    "ipfs",
+    "ucan",
+    "decentralized",
+    "memory",
+    "storacha"
+  ],
+  "author": "Agent DB Team",
   "license": "ISC",
   "dependencies": {
     "@storacha/capabilities": "^2.2.0",
@@ -26,8 +46,11 @@
     "@web3-storage/w3up-client": "^17.3.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
     "fhevm": "^0.6.2",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "w3name": "^1.1.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
@@ -40,7 +63,7 @@
     "@typechain/hardhat": "^9.1.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.3.2",
     "chai": "^4.5.0",
     "dotenv": "^17.3.1",
     "esbuild": "^0.27.3",
@@ -49,8 +72,10 @@
     "hardhat-gas-reporter": "^2.3.0",
     "solidity-coverage": "^0.8.17",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typechain": "^8.3.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

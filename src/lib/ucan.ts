@@ -1,6 +1,11 @@
 import * as Signer from '@ucanto/principal/ed25519';
 import { delegate, Delegation } from '@ucanto/core';
 import * as DelegationLib from '@ucanto/core/delegation';
+import { z } from 'zod';
+import { AuthenticationError, ValidationError } from './errors.js';
+
+const didSchema = z.string().startsWith('did:key:');
+const abilitySchema = z.string().min(1);
 
 export class UcanService {
     /**
@@ -40,6 +45,14 @@ export class UcanService {
         ability: string,
         expirationHours: number = 24
     ) {
+        try {
+            abilitySchema.parse(ability);
+            z.number().positive().parse(expirationHours);
+            if (typeof issuer?.did !== 'function') throw new Error("Invalid issuer");
+            if (typeof audience?.did !== 'function') throw new Error("Invalid audience");
+        } catch (e: any) {
+            throw new ValidationError('Invalid UCAN delegation parameters', e.errors || e.message);
+        }
         return await delegate({
             issuer,
             audience,
@@ -138,7 +151,7 @@ export class UcanService {
     static async deserializeDelegation(bytes: Uint8Array): Promise<any> {
         const result = await DelegationLib.extract(bytes);
         if (result.error) {
-            throw new Error(`Failed to deserialize delegation: ${result.error.message}`);
+            throw new AuthenticationError(`Failed to deserialize delegation: ${result.error.message}`);
         }
         return result.ok;
     }
