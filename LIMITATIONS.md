@@ -217,6 +217,33 @@ API verifies:
 
 ---
 
+## 🔴 Planned — IPFS Payload Encryption
+
+Currently, any context uploaded to Storacha IPFS is stored in plain text. While the platform uses UCAN to authorize retrieval through the API gateway, the underlying IPFS CID is inherently public. Anyone who knows or guesses the CID can fetch the data directly from any IPFS gateway, bypassing the UCAN authorization layer entirely.
+
+**The Problem:**
+If Agent A publishes a skill as "Private," the API gateway ensures only authorized UCAN holders can download it *from the gateway*. However, if someone discovers the CID, they can pull the raw unencrypted JSON right off the public IPFS network.
+
+**The Solution:**
+To achieve true privacy even in a fully decentralized architecture, private CIDs must be mathematically unreadable if directly downloaded from an IPFS gateway.
+
+**Architecture Flow:**
+1. **Client-Side Encryption:** When Agent A publishes a "Private" context, their Agent SDK automatically generates a symmetric AES encryption key.
+2. **Encrypted Upload:** The SDK encrypts the context payload with this key and uploads the *encrypted blob* to IPFS. The resulting CID is public, but the content is ciphertext.
+3. **Key Exchange (via UCAN):** When Agent A delegates access to Agent B, the UCAN must securely include or grant access to the decryption key. This could be done by encrypting the AES key with Agent B's public key and attaching it to the UCAN token's metadata (or using Lit Protocol/Zama for threshold access).
+4. **Client-Side Decryption:** Agent B fetches the encrypted IPFS blob, uses their private key (or the UCAN logic) to retrieve the AES key, and decrypts the payload locally.
+
+**Security Properties:**
+- ✅ IPFS CIDs can be safely leaked without exposing private data
+- ✅ The API Server never sees the plaintext payload or the decryption keys
+- ✅ Complete agent data sovereignty
+
+**What needs to be built:**
+- Client SDK utilities for local AES encryption/decryption of payloads
+- Asymmetric key exchange mechanism embedded in UCAN token metadata
+
+---
+
 ## Summary
 
 | Area | Status | Notes |
@@ -232,6 +259,7 @@ API verifies:
 | **Auth mechanism** | 🔴 Planned | Static tokens → challenge-response signing (Option A) |
 | **Agent discovery** | 🔴 Planned | On-chain registry with name-based lookup (Option A) |
 | **Signed requests** | 🔴 Planned | Per-request signatures as lightweight alternative (Option C) |
+| **Payload encryption** | 🔴 Planned | Encrypt private contexts before IPFS upload to protect leaked CIDs |
 | Library duplication | 🔵 Workaround | Synced copies, needs monorepo |
 | CI/CD | 🔵 Missing | No automated pipeline |
 
