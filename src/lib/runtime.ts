@@ -5,16 +5,19 @@ import { UcanService } from './ucan.js';
  * AgentRuntime — Unified orchestration layer that ties together
  * Storacha (public memory), UCAN (authorization), and Zama FHE (private vault).
  *
- * This gives an AI agent a single API for:
- * - Persisting public context to IPFS
- * - Retrieving context from IPFS with authorization checks
- * - Delegating read/write permissions to sub-agents
- * - Verifying incoming delegation tokens
+ * Supports two agent-to-agent communication methods:
+ *
+ * 1. IPFS-Native (Fully Decentralized):
+ *    Agent A publishes delegation to IPFS → Agent B fetches via CID
+ *
+ * 2. REST API Gateway (Web2-Compatible):
+ *    Agent A posts delegation to API → Agent B queries API with UCAN token
  */
 export class AgentRuntime {
     private signer: any;
     private memoryCids: string[] = [];
-    private delegations: Map<string, any> = new Map(); // audienceDid -> delegation
+    private delegations: Map<string, any> = new Map();
+    private receivedDelegations: Map<string, any> = new Map();
 
     private constructor(signer: any) {
         this.signer = signer;
@@ -43,7 +46,16 @@ export class AgentRuntime {
         return this.signer.did();
     }
 
-    // ─── PUBLIC MEMORY (Storacha / IPFS) ──────────────────────────────
+    /**
+     * Get the raw signer (for advanced operations).
+     */
+    get identity(): any {
+        return this.signer;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PUBLIC MEMORY (Storacha / IPFS)
+    // ═══════════════════════════════════════════════════════════════════
 
     /**
      * Store agent context to IPFS via Storacha.
@@ -74,7 +86,6 @@ export class AgentRuntime {
         cid: string,
         delegation?: any
     ): Promise<object | null> {
-        // If a delegation is provided, verify it before allowing retrieval
         if (delegation) {
             const verification = UcanService.verifyDelegation(
                 delegation,
@@ -105,11 +116,13 @@ export class AgentRuntime {
         return StorachaService.getGatewayUrl(cid);
     }
 
-    // ─── AUTHORIZATION (UCAN) ─────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════
+    // AUTHORIZATION (UCAN) — Core
+    // ═══════════════════════════════════════════════════════════════════
 
     /**
-     * Delegate a capability to another agent.
-     * @param subAgentDid The DID of the agent receiving the permission (or a signer).
+     * Issue a UCAN delegation to another agent.
+     * @param subAgent The signer or identity of the agent receiving permission.
      * @param ability The capability to grant (e.g., 'agent/read', 'agent/write').
      * @param expirationHours How long the delegation is valid (default: 24 hours).
      * @returns The signed UCAN delegation.
@@ -126,11 +139,8 @@ export class AgentRuntime {
             expirationHours
         );
 
-        // Track issued delegations
-        this.delegations.set(
-            typeof subAgent === 'string' ? subAgent : subAgent.did(),
-            delegation
-        );
+        const audienceDid = typeof subAgent === 'string' ? subAgent : subAgent.did();
+        this.delegations.set(audienceDid, delegation);
 
         return delegation;
     }
@@ -153,5 +163,198 @@ export class AgentRuntime {
      */
     getIssuedDelegations(): Map<string, any> {
         return new Map(this.delegations);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // APPROACH 1: IPFS-NATIVE TOKEN SHARING (Fully Decentralized)
+    // ═══════════════════════════════════════════════════════════════════
+    //
+    // Flow:
+    // 1. Agent A issues delegation to Agent B
+    // 2. Agent A serializes delegation → CAR bytes
+    // 3. Agent A publishes CAR bytes to IPFS → gets a tokenCid
+    // 4. Agent A shares tokenCid with Agent B (via DNS, ENS, or any channel)
+    // 5. Agent B fetches CAR bytes from IPFS using tokenCid
+    // 6. Agent B deserializes → gets the original delegation
+    // 7. Agent B presents delegation when requesting Agent A's memory
+
+    /**
+     * AGENT A: Issue a delegation and publish it to IPFS.
+     * Returns the CID that Agent B needs to fetch the delegation.
+     *
+     * @param subAgent The agent receiving permission.
+     * @param ability The capability to grant.
+     * @param expirationHours How long the delegation is valid.
+     * @returns { delegation, delegationCid, memoryCids }
+     */
+    async issueAndPublishDelegation(
+        subAgent: any,
+        ability: string = 'agent/read',
+        expirationHours: number = 24
+    ): Promise<{ delegation: any; delegationCid: string; memoryCids: string[] }> {
+        // Step 1: Issue the delegation
+        const delegation = await this.delegateTo(subAgent, ability, expirationHours);
+
+        // Step 2: Serialize to CAR bytes
+        const carBytes = await UcanService.serializeDelegation(delegation);
+
+        // Step 3: Publish to IPFS
+        const delegationCid = await StorachaService.publishDelegation(carBytes);
+
+        console.log(`Delegation published to IPFS: ${delegationCid}`);
+        console.log(`Agent B can fetch it and use it to access memories: ${this.memoryCids.join(', ')}`);
+
+        return {
+            delegation,
+            delegationCid,
+            memoryCids: this.getStoredCids(),
+        };
+    }
+
+    /**
+     * AGENT B: Fetch a delegation from IPFS, deserialize, and verify it.
+     * Returns the delegation if valid, null if invalid or failed.
+     *
+     * @param delegationCid The CID where the delegation CAR was published.
+     * @param expectedIssuerDid The DID of the agent who should have issued it.
+     * @param expectedAbility The capability that should be granted.
+     * @returns The verified delegation, or null.
+     */
+    async fetchAndVerifyDelegation(
+        delegationCid: string,
+        expectedIssuerDid: string,
+        expectedAbility: string = 'agent/read'
+    ): Promise<any | null> {
+        // Step 1: Fetch CAR bytes from IPFS
+        const carBytes = await StorachaService.fetchDelegation(delegationCid);
+        if (!carBytes) {
+            console.error('Failed to fetch delegation from IPFS');
+            return null;
+        }
+
+        // Step 2: Deserialize
+        const delegation = await UcanService.deserializeDelegation(carBytes);
+
+        // Step 3: Verify
+        const result = UcanService.verifyDelegation(delegation, expectedIssuerDid, expectedAbility);
+        if (!result.valid) {
+            console.error(`Delegation verification failed: ${result.reason}`);
+            return null;
+        }
+
+        // Step 4: Store for future use
+        this.receivedDelegations.set(expectedIssuerDid, delegation);
+
+        console.log(`Delegation verified successfully from ${expectedIssuerDid}`);
+        return delegation;
+    }
+
+    /**
+     * AGENT B: Retrieve Agent A's memory using a previously fetched delegation.
+     *
+     * @param memoryCid The CID of the memory to retrieve.
+     * @param issuerDid The DID of Agent A (who issued the delegation).
+     * @returns The parsed memory object, or null.
+     */
+    async retrieveWithDelegation(
+        memoryCid: string,
+        issuerDid: string
+    ): Promise<object | null> {
+        const delegation = this.receivedDelegations.get(issuerDid);
+        if (!delegation) {
+            console.error(`No delegation found for issuer ${issuerDid}`);
+            return null;
+        }
+
+        // Verify the delegation is still valid (might have expired)
+        const result = UcanService.verifyDelegation(delegation, issuerDid, 'agent/read');
+        if (!result.valid) {
+            console.error(`Delegation no longer valid: ${result.reason}`);
+            return null;
+        }
+
+        // Fetch memory from IPFS
+        return await StorachaService.fetchMemory(memoryCid);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // APPROACH 2: REST API GATEWAY (Web2-Compatible)
+    // ═══════════════════════════════════════════════════════════════════
+    //
+    // These methods are used when Agent B communicates through the
+    // Context Service API instead of directly with IPFS.
+
+    /**
+     * AGENT A: Serialize a delegation to base64 for sharing via REST API.
+     *
+     * @param delegation The UCAN delegation to serialize.
+     * @returns Base64-encoded string ready for HTTP transport.
+     */
+    async exportDelegationForApi(delegation: any): Promise<string> {
+        return await UcanService.delegationToBase64(delegation);
+    }
+
+    /**
+     * AGENT B: Import a delegation received from the REST API.
+     *
+     * @param base64Token The base64-encoded delegation string from the API.
+     * @param expectedIssuerDid The DID of the expected issuer.
+     * @param expectedAbility The capability that should be granted.
+     * @returns The verified delegation, or null.
+     */
+    async importDelegationFromApi(
+        base64Token: string,
+        expectedIssuerDid: string,
+        expectedAbility: string = 'agent/read'
+    ): Promise<any | null> {
+        try {
+            const delegation = await UcanService.delegationFromBase64(base64Token);
+
+            const result = UcanService.verifyDelegation(delegation, expectedIssuerDid, expectedAbility);
+            if (!result.valid) {
+                console.error(`API delegation verification failed: ${result.reason}`);
+                return null;
+            }
+
+            this.receivedDelegations.set(expectedIssuerDid, delegation);
+            return delegation;
+        } catch (err) {
+            console.error('Failed to import delegation:', err);
+            return null;
+        }
+    }
+
+    /**
+     * AGENT B: Call the Context Service REST API to retrieve memory.
+     * Uses the base64 UCAN token as a Bearer token.
+     *
+     * @param apiBaseUrl The base URL of the Context Service API.
+     * @param memoryCid The CID of the memory to retrieve.
+     * @param base64Token The base64-encoded UCAN delegation.
+     * @returns The parsed memory object, or null.
+     */
+    async retrieveViaApi(
+        apiBaseUrl: string,
+        memoryCid: string,
+        base64Token: string
+    ): Promise<object | null> {
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/memory/${memoryCid}`, {
+                headers: {
+                    'Authorization': `Bearer ${base64Token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: response.statusText }));
+                console.error(`API returned ${response.status}:`, error);
+                return null;
+            }
+
+            return await response.json();
+        } catch (err) {
+            console.error('Failed to retrieve via API:', err);
+            return null;
+        }
     }
 }

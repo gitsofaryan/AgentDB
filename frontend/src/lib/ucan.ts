@@ -1,5 +1,6 @@
 import * as Signer from '@ucanto/principal/ed25519';
 import { delegate, Delegation } from '@ucanto/core';
+import * as DelegationLib from '@ucanto/core/delegation';
 
 export class UcanService {
     /**
@@ -93,6 +94,60 @@ export class UcanService {
         }
 
         return { valid: true };
+    }
+
+    // ─── SERIALIZATION / TRANSPORT ────────────────────────────────────
+
+    /**
+     * Serializes a UCAN delegation into a portable CAR archive (Uint8Array).
+     * This can be stored on IPFS, sent over HTTP, or encoded as base64.
+     *
+     * @param delegation The UCAN delegation to serialize.
+     * @returns The CAR archive as Uint8Array.
+     */
+    static async serializeDelegation(delegation: any): Promise<Uint8Array> {
+        const result = await DelegationLib.archive(delegation);
+        if (result.error) {
+            throw new Error(`Failed to serialize delegation: ${result.error.message}`);
+        }
+        return result.ok;
+    }
+
+    /**
+     * Deserializes a UCAN delegation from a CAR archive (Uint8Array).
+     * Reconstructs the full delegation chain from the archive bytes.
+     *
+     * @param bytes The CAR archive bytes.
+     * @returns The reconstructed Delegation object.
+     */
+    static async deserializeDelegation(bytes: Uint8Array): Promise<any> {
+        const result = await DelegationLib.extract(bytes);
+        if (result.error) {
+            throw new Error(`Failed to deserialize delegation: ${result.error.message}`);
+        }
+        return result.ok;
+    }
+
+    /**
+     * Encodes a delegation as a base64 string for easy transport over HTTP/JSON.
+     *
+     * @param delegation The UCAN delegation.
+     * @returns Base64-encoded string of the CAR archive.
+     */
+    static async delegationToBase64(delegation: any): Promise<string> {
+        const bytes = await UcanService.serializeDelegation(delegation);
+        return Buffer.from(bytes).toString('base64');
+    }
+
+    /**
+     * Decodes a delegation from a base64 string.
+     *
+     * @param base64 The base64-encoded CAR archive.
+     * @returns The reconstructed Delegation object.
+     */
+    static async delegationFromBase64(base64: string): Promise<any> {
+        const bytes = new Uint8Array(Buffer.from(base64, 'base64'));
+        return await UcanService.deserializeDelegation(bytes);
     }
 
     /**

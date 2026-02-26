@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "npx tsx run-integration-test.ts",
-    "test:hardhat": "npx hardhat test"
+    "test:hardhat": "npx hardhat test",
+    "server": "npx tsx src/server/index.ts",
+    "demo:transport": "npx tsx src/demos/ucan-transport.ts",
+    "demo:api": "npx tsx src/demos/api-gateway-flow.ts"
   },
   "type": "module",
   "keywords": [],
@@ -20,7 +23,10 @@
     "@ucanto/principal": "^9.0.3",
     "@ucanto/validator": "^10.0.1",
     "@web3-storage/w3up-client": "^17.3.0",
-    "fhevm": "^0.6.2"
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "fhevm": "^0.6.2",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
@@ -31,6 +37,8 @@
     "@nomiclabs/hardhat-etherscan": "^3.1.8",
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^9.1.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^25.3.0",
     "chai": "^4.5.0",
     "dotenv": "^17.3.1",
