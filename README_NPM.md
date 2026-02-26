@@ -17,7 +17,15 @@ Are your agents losing their long-term reasoning when you restart their containe
 npm install @arienjain/agent-db
 ```
 
-*Note: In production deployments, your agent system will need a free email-authenticated Storacha (Filecoin/IPFS) space to persist the files. During testing, it gracefully simulates IPFS CIDs locally.*
+### 🔑 Required: Storacha API Account
+To persist memories to the decentralized Filecoin/IPFS network, your agent node needs a free space provisioned by Storacha.
+
+1. Install the Storacha CLI globally: `npm install -g @storacha/cli`
+2. Authenticate your email: `storacha login`
+3. Create a space for your agents: `storacha space create "AgentDB-Vault"`
+4. Switch to it: `storacha space use <SPACE_DID>`
+
+*(Note: If you do not have a space provisioned during local testing, the SDK gracefully falls back to simulated CIDs so you can still build and test your logic offline).*
 
 ## Core API Reference
 

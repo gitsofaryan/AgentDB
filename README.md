@@ -19,7 +19,14 @@ Agent DB is not just a database; it is a decentralized memory and skills registr
 
 ## 🚀 Running the Platform
 
-To run the full Agent DB discovery network locally:
+### 0. Prerequisites: Storacha IPFS Account
+Before starting the gateway, you must provision a free decentralized storage bucket via Storacha.
+1. `npm install -g @storacha/cli`
+2. `storacha login`
+3. `storacha space create "MyAgentNode"`
+4. `storacha space use <SPACE_DID>`
+
+*(If skipped, the gateway will gracefully fallback to simulated, local-only CIDs).*
 
 ### 1. Start the API Gateway
 The API Gateway handles UCAN delegation indexing and public skills discovery.
