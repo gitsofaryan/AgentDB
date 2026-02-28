@@ -1,6 +1,6 @@
 {
   "name": "@arienjain/agent-db",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Persistent, encrypted, and permission-controlled memory for autonomous AI agents.",
   "main": "dist/index.cjs",
   "module": "dist/index.js",

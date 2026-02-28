@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent DB | Decentralized AI Memory Documentation</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode">
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-text">Agent<span>DB</span></div>
+            <div class="version-badge">v1.4.0</div>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#overview" class="active">Overview</a></li>
+            <li><a href="#getting-started">Getting Started</a></li>
+            <li class="nav-group">Core Features</li>
+            <li><a href="#identity">Identity (DID)</a></li>
+            <li><a href="#storage">Storage & Persistence</a></li>
+            <li><a href="#private-vault">Private ECIES Vault</a></li>
+            <li><a href="#delegation">UCAN Delegation</a></li>
+            <li class="nav-group">Tracks & Hacks</li>
+            <li><a href="#hackathon-tracks">Bounty Alignment</a></li>
+            <li><a href="#finance-vault">Confidential Finance</a></li>
+            <li class="nav-group">Integrations</li>
+            <li><a href="#mcp">MCP Server</a></li>
+            <li><a href="#openclaw">OpenClaw Adapter</a></li>
+            <li><a href="#langchain">LangChain Adapter</a></li>
+            <li class="nav-group">Community</li>
+            <li><a href="#explainer">The "Backpack" Guide</a></li>
+            <li><a href="https://github.com/gitsofaryan/AgentDB">Source Code</a></li>
+        </ul>
+    </nav>
+
+    <main class="content">
+        <header class="hero" id="overview">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>The Future of <span>AI Memory</span></h1>
+                <p>Persistent, encrypted, and sovereign context for autonomous AI agents powered by Web3 infrastructure.</p>
+                <div class="hero-cta">
+                    <a href="#getting-started" class="btn primary">Start Building</a>
+                    <a href="https://github.com/gitsofaryan/AgentDB" class="btn secondary">GitHub Repo</a>
+                </div>
+            </div>
+        </header>
+
+        <section class="visuals-section">
+            <div class="diagram-container">
+                <img src="data-flow.png" alt="Agent DB Data Flow Architecture" class="arch-diagram">
+                <div class="diagram-caption">Architecture: Local Key Generation → ECIES Encryption → IPFS/Storacha Pining → UCAN Authorization</div>
+            </div>
+        </section>
+
+        <section id="getting-started" class="doc-section">
+            <h2>Getting Started</h2>
+            <p>Empower your agent with "Infinite Memory" in under 60 seconds.</p>
+            <h3>1. Installation</h3>
+            <div class="code-block">
+                <pre><code class="language-bash">npm install @arienjain/agent-db</code></pre>
+            </div>
+            <h3>2. Initialize Identity</h3>
+            <p>Every agent gets a unique DID (Decentralized Identifier) derived from a secret seed. No API keys or centralized databases required.</p>
+            <div class="code-block">
+                <pre><code class="language-typescript">import { AgentRuntime } from '@arienjain/agent-db';
+
+// Load a persistent identity
+const agent = await AgentRuntime.loadFromSeed("your-secret-agent-seed");
+console.log(`Agent Online: ${agent.did}`);</code></pre>
+            </div>
+        </section>
+
+        <section id="identity" class="doc-section">
+            <div class="badge">Identity</div>
+            <h2>Deterministic Identity (DID)</h2>
+            <p>Agent DB identity is sovereign. This means the agent, not the platform, owns its name and history. We use <strong>Ed25519</strong> and <strong>secp256k1</strong> signatures to generate DIDs that work across the entire decentralized web.</p>
+            <ul>
+                <li><strong>No Database Needed</strong>: Identities are generated on-the-fly from seeds.</li>
+                <li><strong>Interoperable</strong>: Works with any Web3-agnostic tool.</li>
+                <li><strong>Proof of Action</strong>: Every memory update is cryptographically signed.</li>
+            </ul>
+        </section>
+
+        <section id="storage" class="doc-section">
+            <div class="badge">Persistence</div>
+            <h2>Zero-Loss Storage & IPNS</h2>
+            <p>Agent context is pinned to IPFS via <strong>Storacha</strong>. To ensure the agent is always reachable at the same "address," we use <strong>IPNS (InterPlanetary Name System)</strong>.</p>
+            <div class="code-block">
+                <pre><code class="language-typescript">// Public data is content-addressed and pinned
+const cid = await agent.storePublicMemory({
+    current_task: "Scanning blockchain for opportunities",
+    last_update: Date.now()
+});</code></pre>
+            </div>
+            <p><strong>Production Hardening:</strong> We've implemented a local file-based cache to ensure agents survive reboots even during network outages.</p>
+        </section>
+
+        <section id="private-vault" class="doc-section highlight-box">
+            <div class="badge primary-badge">Security</div>
+            <h2>Private ECIES Vault</h2>
+            <p>True cognitive sovereignty requires that an agent's internal reasoning remains private. We use <strong>ECIES (Elliptic Curve Integrated Encryption Scheme)</strong> with the <strong>P-256</strong> curve to encrypt large context payloads.</p>
+            <div class="code-block">
+                <pre><code class="language-typescript">// Encrypt sensitive strategy locally
+const privateCid = await agent.storePrivateMemory({
+    secret_key: "0x...",
+    trading_logic: "Only buy when RSI < 30"
+});
+
+// Decrypt on demand
+const secrets = await agent.retrievePrivateMemory(privateCid);</code></pre>
+            </div>
+            <p>Encryption happens <strong>client-side</strong>. The server never sees your raw data.</p>
+        </section>
+
+        <section id="#hackathon-tracks" class="doc-section">
+            <div class="badge success-badge">PL_Genesis</div>
+            <h2>Bounty Track Alignment</h2>
+            <p>Agent DB is purpose-built to address the core challenges of the PL_Genesis bounty tracks.</p>
+            <div class="tracks-grid">
+                <div class="track-card">
+                    <h3>🤖 AI & Robotics</h3>
+                    <p>Solving the "Amnesia Bot" problem via persistent memory streams on Storacha.</p>
+                </div>
+                <div class="track-card">
+                    <h3>🔗 Crypto & Finance</h3>
+                    <p>Enabling autonomous agents to manage non-custodial wallets via Lit Protocol.</p>
+                </div>
+                <div class="track-card">
+                    <h3>🧠 Neurotech</h3>
+                    <p>Protecting "Digital Minds" via ECIES cognitive sovereignty and private vaults.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="finance-vault" class="doc-section">
+            <div class="badge primary-badge">Zama fhEVM</div>
+            <h2>Confidential Finance Vault</h2>
+            <p>For data that must be cryptographically verifiable while remaining hidden, we utilize **Zama's Fully Homomorphic Encryption (FHE)**.</p>
+            <p>This allows Agent A to verify that Agent B is making a valid trade according to private rules, without Agent B ever seeing Agent A's secret trade secrets.</p>
+        </section>
+
+        <section id="delegation" class="doc-section">
+            <div class="badge">Authorization</div>
+            <h2>UCAN Delegation</h2>
+            <p>Collaboration shouldn't mean sharing keys. Agent DB implements <strong>UCAN (User Controlled Authorization Networks)</strong> for secure peer-to-peer delegation.</p>
+            <div class="code-block">
+                <pre><code class="language-typescript">// Delegate READ access to a support bot for 2 hours
+const token = await agent.delegateTo(supportBotDid, 'agent/read', 2);</code></pre>
+            </div>
+        </section>
+
+        <section id="mcp" class="doc-section">
+            <div class="badge success-badge">Interoperability</div>
+            <h2>Model Context Protocol (MCP)</h2>
+            <p>Transform any AI model into an Agent DB-enabled entity with our MCP server. This allows models in Claude, Gemini, or local environments to natively call decentralized memory tools.</p>
+            <div class="code-block">
+                <pre><code class="language-bash"># Start the MCP tool suite
+npm run mcp</code></pre>
+            </div>
+        </section>
+
+        <section id="openclaw" class="doc-section">
+            <div class="badge">Frameworks</div>
+            <h2>OpenClaw & Framework Support</h2>
+            <p>Native adapters for modern agent frameworks ensure zero friction for developers.</p>
+            <div class="code-block">
+                <pre><code class="language-typescript">import { OpenClawAgentDbAdapter } from '@arienjain/agent-db';
+
+const adapter = new OpenClawAgentDbAdapter(agent);
+// Use with any OpenClaw-compatible agent logic</code></pre>
+            </div>
+        </section>
+
+        <section id="explainer" class="doc-section highlight-box">
+            <div class="badge">Quick Guide</div>
+            <h2>The "Backpack" Analogy</h2>
+            <p>Think of Agent DB as a magic backpack for AI. Instead of a bot forgetting everything when its "power" is pulled, it stores its entire life history in a backpack that floats in the cloud (IPFS), secured by a lock only the bot has the key for.</p>
+            <a href="../EXPLAINER.md" class="btn secondary">Read the Full Explainer</a>
+        </section>
+
+        <section id="roadmap" class="doc-section">
+            <h2>Roadmap & Future</h2>
+            <p>We are just getting started. Our vision is to become the universal context layer for the Agentic Web.</p>
+            <ul>
+                <li><strong>Dynamic Delegation</strong>: AI-to-AI automatic capability negotiation.</li>
+                <li><strong>FHE Proofs</strong>: Zero-knowledge proofs for agent memory verification.</li>
+                <li><strong>Mobile SDK</strong>: Native Agent DB support for edge-AI devices.</li>
+            </ul>
+        </section>
+
+        <section id="history" class="doc-section">
+            <h2>Release History</h2>
+            <div class="history-item">
+                <strong>v1.4.0 (Current)</strong>: Model Context Protocol (MCP) launch.
+            </div>
+            <div class="history-item">
+                <strong>v1.3.0</strong>: ECIES security hardening and persistence engine.
+            </div>
+            <div class="history-item">
+                <strong>v1.2.0</strong>: Multi-track hackathon demonstrators.
+            </div>
+        </section>
+
+        <footer class="doc-footer">
+            <p>&copy; 2026 Agent DB Project. Built for PL_Genesis Hackathon.</p>
+        </footer>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-bash.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
