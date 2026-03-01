@@ -1,0 +1,625 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Agent DB · Get Started Page Styles
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Root ──────────────────────────────────────────────────────────── */
+.gs-root {
+    background: #07080f;
+    color: #dcdcee;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    line-height: 1.65;
+}
+
+/* ── WARP HEADER ───────────────────────────────────────────────────── */
+.gs-header {
+    position: relative;
+    height: 340px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gs-warp-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.gs-header-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1060px;
+    padding: 0 2rem;
+}
+
+.gs-back-link {
+    font-size: 0.82rem;
+    color: #6868a8;
+    text-decoration: none;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-top: 0.5rem;
+}
+
+.gs-back-link:hover {
+    color: #a5b4fc;
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.06);
+}
+
+.gs-header-center {
+    text-align: center;
+    flex: 1;
+    padding: 0 1rem;
+}
+
+.gs-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.85rem;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #10b981;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.gs-header-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: gs-pulse 2s ease-in-out infinite;
+}
+
+@keyframes gs-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+}
+
+.gs-header-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: #f0f0f5;
+    margin-bottom: 0.6rem;
+    line-height: 1.15;
+}
+
+.gs-header-sub {
+    font-size: 0.95rem;
+    color: #7878a8;
+    margin-bottom: 1.4rem;
+    line-height: 1.6;
+}
+
+.gs-header-links {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.gs-npm-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.1rem;
+    background: #cc3534;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+}
+
+.gs-npm-link:hover {
+    background: #e03c3b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(204, 53, 52, 0.4);
+}
+
+.gs-gh-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.1rem;
+    background: rgba(255, 255, 255, 0.06);
+    color: #c8c8e8;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s;
+}
+
+.gs-gh-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* ── QUICK INSTALL BANNER ──────────────────────────────────────────── */
+.gs-quick-install {
+    background: rgba(99, 102, 241, 0.04);
+    border-top: 1px solid rgba(99, 102, 241, 0.12);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.12);
+    padding: 1.5rem 2rem;
+}
+
+.gs-qi-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.gs-qi-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+}
+
+.gs-qi-or {
+    font-size: 0.78rem;
+    color: #44447a;
+}
+
+/* ── MAIN ──────────────────────────────────────────────────────────── */
+.gs-main {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── STEP CARD ─────────────────────────────────────────────────────── */
+.gs-step-card {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 0 2rem;
+    padding: 2.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 700px) {
+    .gs-step-card {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .gs-step-numbar {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .gs-step-line {
+        display: none;
+    }
+}
+
+.gs-step-numbar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.25rem;
+}
+
+.gs-step-num {
+    font-size: 1rem;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    letter-spacing: 0.05em;
+    border: 1.5px solid;
+    border-radius: 10px;
+    width: 52px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.gs-step-line {
+    flex: 1;
+    width: 2px;
+    border-radius: 1px;
+    opacity: 0.12;
+    min-height: 40px;
+}
+
+.gs-step-body {
+    padding-top: 0.1rem;
+}
+
+.gs-step-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #e8e8f0;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+}
+
+.gs-step-desc {
+    font-size: 0.9rem;
+    color: #7878a0;
+    margin-bottom: 1.5rem;
+    max-width: 640px;
+    line-height: 1.7;
+}
+
+/* ── CODE BLOCK ────────────────────────────────────────────────────── */
+.gs-code-block {
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    overflow: hidden;
+    background: #070810;
+    margin-bottom: 0.75rem;
+}
+
+.gs-code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.gs-code-lang {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #44447a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.gs-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.18);
+    border-radius: 6px;
+    color: #818cf8;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: inherit;
+}
+
+.gs-copy-btn:hover {
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+}
+
+.gs-code-pre {
+    padding: 1rem 1.2rem;
+    margin: 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+}
+
+.gs-code-bash {
+    color: #c8c8e8;
+}
+
+.gs-tok-keyword {
+    color: #818cf8;
+}
+
+.gs-tok-string {
+    color: #10b981;
+}
+
+.gs-tok-comment {
+    color: #44447a;
+    font-style: italic;
+}
+
+.gs-tok-fn {
+    color: #38bdf8;
+}
+
+.gs-tok-var {
+    color: #c8c8e8;
+}
+
+.gs-tok-plain {
+    color: #b0b0cc;
+}
+
+.gs-tok-num {
+    color: #f59e0b;
+}
+
+/* ── TWO COL ───────────────────────────────────────────────────────── */
+.gs-two-col {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 800px) {
+    .gs-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+.gs-codes {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.gs-codes--full {
+    width: 100%;
+}
+
+/* ── ILLUSTRATION ──────────────────────────────────────────────────── */
+.gs-illu-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gs-step-svg {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+}
+
+.gs-illu-caption {
+    font-size: 0.77rem;
+    color: #50508a;
+    text-align: center;
+    line-height: 1.5;
+    max-width: 240px;
+}
+
+/* ── SMALL HELPERS ──────────────────────────────────────────────────── */
+.gs-small-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #50508a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+    margin-top: 0.8rem;
+}
+
+.gs-feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 0.75rem;
+}
+
+.gs-feature-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: #9898b8;
+}
+
+.gs-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.gs-tip-box {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.83rem;
+    color: #8888b0;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+}
+
+.gs-tip-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+}
+
+.gs-tip-box code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8em;
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.1);
+    padding: 0.1em 0.3em;
+    border-radius: 4px;
+}
+
+/* ── CONCEPT BANNER ─────────────────────────────────────────────────── */
+.gs-concept-banner {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: rgba(56, 189, 248, 0.04);
+    border: 1px solid rgba(56, 189, 248, 0.15);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    font-size: 0.88rem;
+    color: #8898b8;
+    margin-top: 1rem;
+    line-height: 1.65;
+}
+
+.gs-concept-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.gs-concept-banner strong {
+    color: #38bdf8;
+    font-weight: 700;
+}
+
+/* ── MCP TOOLS ──────────────────────────────────────────────────────── */
+.gs-mcp-tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.65rem;
+    margin-top: 1rem;
+}
+
+.gs-mcp-tool {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+.gs-mcp-tool:hover {
+    border-color: var(--t-color, #6366f1);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.gs-tool-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--t-color, #818cf8);
+    flex-shrink: 0;
+}
+
+.gs-tool-desc {
+    font-size: 0.78rem;
+    color: #5858a0;
+}
+
+/* ── NEXT STEPS ─────────────────────────────────────────────────────── */
+.gs-next-section {
+    background: rgba(255, 255, 255, 0.015);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 3rem 2rem;
+}
+
+.gs-next-inner {
+    max-width: 1060px;
+    margin: 0 auto;
+}
+
+.gs-next-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #e0e0f0;
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.02em;
+}
+
+.gs-next-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.gs-next-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.3rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.22s;
+}
+
+.gs-next-card:hover {
+    background: rgba(99, 102, 241, 0.06);
+    border-color: rgba(99, 102, 241, 0.25);
+    transform: translateY(-2px);
+}
+
+.gs-next-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.gs-next-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #d0d0e8;
+    margin-bottom: 0.15rem;
+}
+
+.gs-next-desc {
+    font-size: 0.78rem;
+    color: #5858a0;
+}
+
+.gs-next-arrow {
+    margin-left: auto;
+    color: #4444a0;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* ── FOOTER ─────────────────────────────────────────────────────────── */
+.gs-footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 0.78rem;
+    color: #36367a;
+    line-height: 1.8;
+}

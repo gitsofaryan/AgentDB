@@ -5,8 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Agent Vault | Decentralized AI Memory",
-  description: "Secure, persistent, and authorized memory for AI Agents using IPFS, UCAN, and Zama FHE.",
+  title: "Agent DB | Decentralized Memory for AI Agents",
+  description:
+    "Persistent, encrypted, and permission-controlled memory for autonomous AI agents powered by IPFS, UCAN, and Zama fhEVM.",
 };
 
 export default function RootLayout({
@@ -16,18 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <div className="dashboard-container">
-          <header>
-            <div className="logo">AGENT VAULT</div>
-            <div className="status-badge">
-              <span className="status-dot"></span>
-              Mainnet-v1 Ready
-            </div>
-          </header>
-          <main>{children}</main>
-        </div>
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
