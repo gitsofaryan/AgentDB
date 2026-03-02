@@ -8,6 +8,19 @@ export class StorachaService {
     // Persistent local cache directory for simulated memories when Storacha space is missing.
     private static STORAGE_DIR = path.join(process.cwd(), '.agent_storage');
 
+    // Cached Storacha client (singleton to avoid re-creating on every call)
+    private static _cachedClient: any = null;
+
+    /**
+     * Returns a cached Storacha client instance.
+     */
+    private static async getClient() {
+        if (!StorachaService._cachedClient) {
+            StorachaService._cachedClient = await create();
+        }
+        return StorachaService._cachedClient;
+    }
+
     /**
      * Initializes the local storage directory.
      */
@@ -53,7 +66,7 @@ export class StorachaService {
         await StorachaService.ensureCacheDir();
         try {
             return await StorachaService.withRetry(async () => {
-                const client = await create();
+                const client = await StorachaService.getClient();
                 const blob = new Blob([JSON.stringify(memory)], { type: 'application/json' });
                 const files = [new File([blob], 'memory.json')];
 
@@ -120,7 +133,7 @@ export class StorachaService {
      * @returns The CID where the delegation token is stored.
      */
     static async publishDelegation(delegationBytes: Uint8Array): Promise<string> {
-        const client = await create();
+        const client = await StorachaService.getClient();
 
         const blob = new Blob([delegationBytes as any], { type: 'application/vnd.ipld.car' });
         const files = [new File([blob], 'delegation.car')];
@@ -162,7 +175,7 @@ export class StorachaService {
      * @returns The CID of the uploaded content.
      */
     static async uploadRaw(data: Uint8Array, filename: string, mimeType: string = 'application/octet-stream'): Promise<string> {
-        const client = await create();
+        const client = await StorachaService.getClient();
 
         const blob = new Blob([data as any], { type: mimeType });
         const files = [new File([blob], filename)];

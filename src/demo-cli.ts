@@ -25,7 +25,7 @@ async function main() {
     console.log("  Delegation Token Issued!\n");
 
     console.log("Step 4: Agent B fetches Agent A's thoughts...");
-    const thoughts1 = await agentB.fetchMemoryStream(ipnsNameId, delegation.delegation);
+    const thoughts1 = await agentB.fetchMemoryStream(ipnsNameId, delegation);
     console.log(`  🤖 Agent B read: ${JSON.stringify(thoughts1)}\n`);
 
     console.log("Step 5: Agent A executes a task and updates its thoughts...");
@@ -36,7 +36,7 @@ async function main() {
     });
 
     console.log("\nStep 6: Agent B fetches from the EXACT SAME IPNS Name and sees the update!");
-    const thoughts2 = await agentB.fetchMemoryStream(ipnsNameId, delegation.delegation);
+    const thoughts2 = await agentB.fetchMemoryStream(ipnsNameId, delegation);
     console.log(`  🤖 Agent B read: ${JSON.stringify(thoughts2)}\n`);
 
     console.log("🚀 DEMONSTRATION COMPLETE!");

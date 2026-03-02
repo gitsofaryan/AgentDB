@@ -158,9 +158,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           capability: string; 
           expiry_hours: number 
         };
-        const token = await activeAgent.delegateTo(target_did, capability || "agent/read", expiry_hours || 24);
+        const targetPrincipal = { did: () => target_did };
+        const delegation = await activeAgent.delegateTo(targetPrincipal, capability || "agent/read", expiry_hours || 24);
+        const base64Token = await activeAgent.exportDelegationForApi(delegation);
         return {
-          content: [{ type: "text", text: `Access delegated. UCAN Token: ${token}` }],
+          content: [{ type: "text", text: `Access delegated to ${target_did}. UCAN Token (base64): ${base64Token}` }],
         };
       }
 

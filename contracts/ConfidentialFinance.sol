@@ -39,7 +39,7 @@ contract ConfidentialFinance is GatewayCaller {
      * @dev Verify if a proposed trade amount is within the encrypted risk threshold.
      * This allows an agent to prove it is following its private strategy without revealing the threshold.
      */
-    function verifyTradeLimit(einput tradeAmountHandle, bytes memory inputProof) public view returns (ebool) {
+    function verifyTradeLimit(einput tradeAmountHandle, bytes memory inputProof) public returns (ebool) {
         require(hasStrategy[msg.sender], "No strategy stored");
         
         euint64 tradeAmount = TFHE.asEuint64(tradeAmountHandle, inputProof);

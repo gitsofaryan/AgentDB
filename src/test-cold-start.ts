@@ -53,7 +53,7 @@ async function main() {
         const delegation = await agent.delegateTo(subAgent, 'agent/read');
         console.log(`  ✅ Issued delegation UCAN to sub-agent.`);
         
-        const verification = agent.verifyIncoming(delegation);
+        const verification = agent.verifyIncoming(delegation, agent.did);
         console.log(`  Verification for sub-agent: ${verification.valid ? '✅ VALID' : '❌ INVALID'}`);
         console.log('');
 
