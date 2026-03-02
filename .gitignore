@@ -7,9 +7,13 @@ vault-recovery-key.txt
 *.pem
 *.key
 
+# Local agent storage
+.agent_storage/
+cache/
+.agent-db/
+
 # Build artifacts
 artifacts/
-cache/
 typechain-types/
 compile_error.txt
 
