@@ -2,6 +2,12 @@
 
 All notable changes to **Agent DB SDK** are documented here.
 
+## [1.4.0] - 2026-03-02
+### Added
+- **Model Context Protocol (MCP)**: Implemented full server with tools for memory storage, encryption, and delegation.
+- **Premium Documentation Website**: Launched futuristic, responsive docs hub in the `/docs` folder.
+- **Claude Desktop Support**: Added standard configuration for easy LLM integration.
+
 ## [1.3.0] - 2026-03-02
 ### Added
 - **ECIES Encryption (`src/lib/encryption.ts`)**: Implemented ECIES with NIST P-256 for secure, large-payload private memory on IPFS.

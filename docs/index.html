@@ -158,9 +158,20 @@ const token = await agent.delegateTo(supportBotDid, 'agent/read', 2);</code></pr
             <div class="badge success-badge">Interoperability</div>
             <h2>Model Context Protocol (MCP)</h2>
             <p>Transform any AI model into an Agent DB-enabled entity with our MCP server. This allows models in Claude, Gemini, or local environments to natively call decentralized memory tools.</p>
+            
             <div class="code-block">
-                <pre><code class="language-bash"># Start the MCP tool suite
+                <pre><code class="language-bash"># Start the MCP tool suite locally
 npm run mcp</code></pre>
+            </div>
+
+            <p><strong>Claude Desktop Configuration:</strong></p>
+            <div class="code-block">
+                <pre><code class="language-json">"mcpServers": {
+  "agent-db": {
+    "command": "npx",
+    "args": ["-y", "@arienjain/agent-db", "mcp"]
+  }
+}</code></pre>
             </div>
         </section>
 

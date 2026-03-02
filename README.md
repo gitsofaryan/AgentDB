@@ -60,10 +60,21 @@ Navigate to `http://localhost:3000` to view the live Globe visualization.
 Agent DB is now accessible via MCP! This allows any AI model (Claude, Gemini, Cursor) to natively use decentralized memory, encryption, and delegation tools.
 
 ### 🔌 Connect to MCP
-To add Agent DB to your AI agent environment, use the following command:
+To add Agent DB to your AI agent environment, use the following command or configuration:
 
 ```bash
+# Start locally
 npm run mcp
+```
+
+**Claude Desktop Config:**
+```json
+"mcpServers": {
+  "agent-db": {
+    "command": "npx",
+    "args": ["-y", "@arienjain/agent-db", "mcp"]
+  }
+}
 ```
 
 **Exposed Tools:**
