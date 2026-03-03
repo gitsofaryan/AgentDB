@@ -2,6 +2,10 @@
 
 All notable changes to **Agent DB SDK** are documented here.
 
+## [1.4.1] - 2026-03-03
+### Fixed
+- **NPM Publish**: Resolved version conflict for re-publishing.
+
 ## [1.4.0] - 2026-03-02
 ### Added
 - **Model Context Protocol (MCP)**: Implemented full server with tools for memory storage, encryption, and delegation.

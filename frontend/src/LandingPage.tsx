@@ -351,7 +351,7 @@ export default function LandingPage() {
                             Get Started
                         </Link>
                         <a
-                            href="https://github.com/IPFS-AI-Context-Flow"
+                            href="https://github.com/gitsofaryan/AgentDB"
                             target="_blank"
                             rel="noreferrer"
                             className="lp-btn lp-btn--ghost"
