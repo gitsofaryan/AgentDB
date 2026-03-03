@@ -52,11 +52,12 @@ const TOOLS = [
   },
   {
     name: "retrieve_memory",
-    description: "Recall public data from decentralized storage using a CID.",
+    description: "Recall public data from decentralized storage using a CID. Optionally provide a UCAN token if access is delegated.",
     inputSchema: {
       type: "object",
       properties: {
-        cid: { type: "string", description: "The CID of the memory to labels." },
+        cid: { type: "string", description: "The CID of the memory to fetch." },
+        ucan: { type: "string", description: "Optional: Base64 encoded UCAN delegation token." },
       },
       required: ["cid"],
     },
@@ -96,6 +97,61 @@ const TOOLS = [
       required: ["target_did"],
     },
   },
+  {
+    name: "read_semantic_memory",
+    description: "Read the agent's core semantic memory (like memory.md) which contains stable facts and preferences.",
+    inputSchema: { type: "object", properties: {}, required: [] },
+  },
+  {
+    name: "update_semantic_memory",
+    description: "Update the agent's core semantic memory with new facts or refined preferences.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        markdown: { type: "string", description: "The complete markdown content for semantic memory." },
+      },
+      required: ["markdown"],
+    },
+  },
+  {
+    name: "read_daily_log",
+    description: "Read the agent's episodic memory (daily log) for a specific date.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        date: { type: "string", description: "The date in YYYY-MM-DD format." },
+      },
+      required: ["date"],
+    },
+  },
+  {
+    name: "append_daily_log",
+    description: "Append a new entry or fact to the agent's episodic memory (daily log) for a specific date.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        date: { type: "string", description: "The date in YYYY-MM-DD format." },
+        markdown: { type: "string", description: "The markdown content to append." },
+      },
+      required: ["date", "markdown"],
+    },
+  },
+  {
+    name: "list_sessions",
+    description: "List all known session namespaces (chat contexts) in the agent's decentralized registry.",
+    inputSchema: { type: "object", properties: {}, required: [] },
+  },
+  {
+    name: "resolve_session",
+    description: "Find the CID and latest data for a specific session namespace.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        namespace: { type: "string", description: "The namespace to resolve (e.g., 'CHAT_ALICE')." },
+      },
+      required: ["namespace"],
+    },
+  },
 ];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -126,8 +182,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "retrieve_memory": {
         if (!activeAgent) throw new Error("Agent not initialized. Call init_agent first.");
-        const { cid } = args as { cid: string };
-        const data = await activeAgent.retrievePublicMemory(cid);
+        const { cid, ucan } = args as { cid: string; ucan?: string };
+        const data = await activeAgent.retrievePublicMemory(cid, ucan);
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
         };
@@ -166,12 +222,69 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      case "read_semantic_memory": {
+        if (!activeAgent) throw new Error("Agent not initialized. Call init_agent first.");
+        const markdown = await activeAgent.readSemanticMemory();
+        return { content: [{ type: "text", text: markdown }] };
+      }
+
+      case "update_semantic_memory": {
+        if (!activeAgent) throw new Error("Agent not initialized. Call init_agent first.");
+        const { markdown } = args as { markdown: string };
+        const cid = await activeAgent.updateSemanticMemory(markdown);
+        return { content: [{ type: "text", text: `Semantic memory updated successfully. CID: ${cid}` }] };
+      }
+
+      case "read_daily_log": {
+        if (!activeAgent) throw new Error("Agent not initialized. Call init_agent first.");
+        const { date } = args as { date: string };
+        const markdown = await activeAgent.readDailyLog(date);
+        return { content: [{ type: "text", text: markdown }] };
+      }
+
+      case "append_daily_log": {
+        if (!activeAgent) throw new Error("Agent not initialized. Call init_agent first.");
+        const { date, markdown } = args as { date: string; markdown: string };
+        const cid = await activeAgent.appendDailyLog(date, markdown);
+        return { content: [{ type: "text", text: `Daily log appended successfully. CID: ${cid}` }] };
+      }
+
+      case "save_session_snapshot": {
+        if (!activeAgent) throw new Error("Agent not initialized. Call init_agent first.");
+        const { session_id, markdown } = args as { session_id: string; markdown: string };
+        const cid = await activeAgent.saveSessionSnapshot(session_id, markdown);
+        return { content: [{ type: "text", text: `Session snapshot saved. CID: ${cid}` }] };
+      }
+
+      case "list_sessions": {
+        if (!activeAgent) throw new Error("Agent not initialized. Call init_agent first.");
+        const sessions = await activeAgent.listNamespaces();
+        return {
+          content: [{ type: "text", text: `Known Sessions:\n${sessions.map(s => `- ${s}`).join("\n")}` }],
+        };
+      }
+
+      case "resolve_session": {
+        if (!activeAgent) throw new Error("Agent not initialized. Call init_agent first.");
+        const { namespace } = args as { namespace: string };
+        const cid = await activeAgent.getNamespaceCid(namespace);
+        if (!cid) {
+          return { content: [{ type: "text", text: `Namespace '${namespace}' not found.` }], isError: true };
+        }
+        const data = await activeAgent.retrievePublicMemory(cid);
+        return {
+          content: [{ type: "text", text: `Namespace: ${namespace}\nCID: ${cid}\n\nData:\n${JSON.stringify(data, null, 2)}` }],
+        };
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
   } catch (error) {
+    const err = error as Error;
+    console.error(`[MCP Error in ${name}]:`, err.stack || err.message);
     return {
-      content: [{ type: "text", text: `Error: ${(error as Error).message}` }],
+      content: [{ type: "text", text: `Error: ${err.message}` }],
       isError: true,
     };
   }
