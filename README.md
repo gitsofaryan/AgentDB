@@ -1,144 +1,176 @@
-﻿# 🧠 Agent DB: Decentralized Memory for AI Agents
+﻿# 🤖 AgentDB: The Decentralized Memory Protocol for AI Agents
 
-> **Persistent, encrypted, and permission-controlled memory for autonomous AI agents powered entirely by Web3 infrastructure.**
-
-Built on **Storacha**, **IPNS**, **UCAN**, and **Zama fhEVM**, Agent DB is an enterprise-grade platform for endowing AI agents with cross-platform reasoning continuity and verifiable capability delegation.
+**AgentDB** is a high-performance, decentralized memory infrastructure layer that provides AI agents with permanent, sovereign, and collaborative "brains." Built on **Storacha (IPFS/Filecoin)**, **UCAN**, and **X25519**, it transforms ephemeral agent sessions into a global, device-agnostic knowledge graph. 
 
 ---
 
-## 🏗️ Platform Architecture
+## 🌎 The Vision: Solving the "AI Lobotomy"
 
-Agent DB is a decentralized memory and sovereignty engine for autonomous AI. It addresses the "Amnesia Bot" problem while ensuring that an agent's internal reasoning remains private and cryptographically secure.
+Today, AI agents suffer from a fundamental flaw: **amnesia**. Every time a process restarts, a server crashes, or a container scales down, the agent is "lobotomized." Their memory is either trapped in volatile local RAM or locked inside centralized SaaS databases that other agents cannot access. 
 
-1. **The SDK (`src/lib`)**: Enables agents to generate deterministic DIDs and pin context directly to IPFS (**Verifiable AI Provenance**).
-2. **ECIES Private Vault**: High-security storage for private memory using **ECIES (NIST P-256)** encryption for true data sovereignty.
-3. **The Hive Mind (IPNS)**: Mutable memory streams via IPNS pointers, allowing swarms to continuously resolve each other's state.
-4. **Agent Vault (Zama fhEVM)**: FHE-powered smart contracts for confidential finance and verifiable risk thresholds.
-5. **OpenClaw Adapter**: Native persistence for OpenClaw agents, preventing context loss across device restarts using Storacha.
-6. **Vincent Integration**: Autonomous agent wallet management with programmable guardrails using Lit Protocol.
+**AgentDB changes the fundamental architecture of AI:**
+
+1. **From Local Silos to a Global Graph**: Agents no longer store "thoughts" on a single hard drive. They serialize their context and pin it to the decentralized web (Storacha), making their memory accessible from anywhere on Earth.
+2. **From Isolation to Cryptographic Collaboration**: AI models are moving towards multi-agent swarms. Using **UCAN delegations**, Agent B can cryptographically "hand off" its context to Agent A without exposing private keys or relying on centralized middleware.
+3. **From Centralized to Sovereign**: You—and your agents—own the memory. There is no API gatekeeper. It is raw, encrypted data pinned to the permanent web, verifiable on-chain.
 
 ---
 
-## 🚀 Running the Platform
+## 🏗️ Technical Architecture & Under-the-Hood
 
-### 0. Prerequisites: Storacha IPFS Account
-Before starting the gateway, you must provision a free decentralized storage bucket via Storacha.
-1. `npm install -g @storacha/cli`
-2. `storacha login`
-3. `storacha space create "MyAgentNode"`
-4. `storacha space use <SPACE_DID>`
+AgentDB operates as a fully peer-to-peer memory layer comprising three core modules. These modules ensure that data is not only stored permanently but retrieved at speeds competitive with Web2 databases.
 
-*(If skipped, the gateway will gracefully fallback to simulated, local-only CIDs).*
+### 🧩 1. Identity & Authorization Layer (`ucan.ts`)
+We standardize agent identification using **Ed25519 DIDs** (Decentralized Identifiers). An agent *is* its private key.
+- **Sovereign Agents**: Every agent generates a DID upon initialization (`UcanService.createIdentity()`).
+- **Capability Delegation**: When Agent B finishes researching a topic, it issues a cryptographically signed "ticket" (UCAN) to Agent A (`UcanService.delegate()`). This ticket encodes the specific IPFS CID and the `agent/read` capability.
+- **Zero-Trust Verification**: Access isn't granted by checking a database; the proof is baked into the math of the UCAN token itself (`UcanService.verifyDelegation()`).
 
-### 1. Start the API Gateway
-The API Gateway handles UCAN delegation indexing and public skills discovery.
+### 🧩 2. Storage & Retrieval Layer (`storacha.ts`)
+Powered by **Storacha** (the hot storage layer for Filecoin), we treat IPFS as a high-speed agent backend.
+- **Gateway Racing Engine**: The biggest critique of IPFS is latency. AgentDB implements a proprietary retrieval strategy that queries 4+ IPFS gateways (Cloudflare, Pinata, IPFS.io, Storacha) simultaneously. The first one to return the data wins, consistently delivering **sub-second response times** (~500ms).
+- **Stable IPNS Mapping**: To solve the problem of moving agents across devices, AgentDB derives a stable mutable pointer directly from an agent's seed (`StorachaService.deriveIpnsName()`). This creates a permanent, deterministic "Home Base" (Session Registry) for the agent's memory map, regardless of the physical hardware it runs on.
+
+### 🧩 3. Security Layer (`encryption.ts`)
+For sensitive data, we implement hardware-grade protection using **X25519 (Curve25519)**.
+- **ECIES Implementation**: AgentDB combines Diffie-Hellman key exchange with **AES-256-GCM**. When Agent B wants to write a private thought, it encrypts the data so it is mathematically unreadable by anyone but the owner and authorized delegates (`EncryptionService.encrypt()`).
+
+---
+
+## 🧠 Comprehensive Ecosystem Integrations
+
+AgentDB acts as a drop-in persistence layer for the modern AI stack, enabling agents built on different frameworks to share a unified, decentralized memory.
+
+### 🔹 [OpenClaw](https://github.com/openclaw/openclaw) Integration
+OpenClaw agents are brilliant but often lose their customized persona when deployed to new environments. `AgentDbOpenClawMemory` provides a permanent anchor:
+- **Persistent Persona (`resumeFromCid`)**: Instantly restores an agent's entire personality, learned preferences, and history from the decentralized web when it boots up.
+- **Auto-Checkpointing (`commitToStoracha`)**: Automatically snapshots the agent's state to IPFS after conversations.
+
+### 🔹 [LangChain](https://js.langchain.com/) Integration
+`AgentDbLangchainMemory` replaces the ephemeral `BufferMemory` module standard in LangChain:
+- **Streaming "Hive Mind" IPNS**: Instead of just saving static JSON, it continuously updates a single mutable pointer as the conversation progresses. This allows external tools or other agents to "tune in" to a live stream of the agent's thought process.
+
+### 🔹 [Lit Protocol](https://litprotocol.com/) Integration
+Agents need agency. `LitVincentService` connects agent memory to programmable on-chain wallets:
+- **Programmable Wallets (`provisionAgentWallet`)**: Uses Lit PKPs to generate non-custodial wallets specifically for the agent. This allows the AgentDB agent to autonomously pay gas fees or its own Storacha storage bills, creating a fully self-sustaining AI entity.
+
+---
+
+## 💻 Developer Integration Guide
+
+Integrating AgentDB into your custom AI project takes less than 10 lines of code.
+
+### 1. Initialization and Public Memory
+Start by creating a stable identity and pushing data to the public IPFS network.
+
+```typescript
+import { AgentRuntime } from '@arienjain/agent-db';
+
+// Initialize agent deterministically from a secure seed.
+// This guarantees it will resolve the same IPNS memory registry anywhere.
+const agent = await AgentRuntime.loadFromSeed(process.env.AGENT_SEED);
+console.log(`Agent Online: ${agent.did}`);
+
+// Store a complex, nested context directly to Storacha (IPFS)
+const memoryCid = await agent.storePublicMemory({
+    mission: "Alpha Sector Scan",
+    insights: ["Anomalous energy detected", "Possible alien artifact"],
+    metrics: { confidence: 0.95 }
+});
+
+console.log(`Memory permanently pinned at CID: ${memoryCid}`);
+```
+
+### 2. The Agent Handoff (Collaboration)
+Share memory with another agent using UCANs.
+
+```typescript
+// Agent A wants to give Agent B permission to read its data
+const agentBDid = "did:key:z6Mk...Agent_B_Address";
+
+// Generate a cryptographic delegation valid for 24 hours
+const token = await agent.delegateTo(
+    { did: () => agentBDid }, 
+    'agent/read', 
+    24
+);
+
+// Publish token to IPFS for Agent B to pick up
+const tokenCid = await agent.exportDelegationForApi(token);
+// Or send token directly over API/WebSocket
+```
+
+### 3. Private Memory (Military-Grade Encryption)
+```typescript
+// Encrypts memory so NO ONE else on the IPFS network can read it
+const secureCid = await agent.storePrivateMemory({
+    api_keys: { openai: "sk-..." },
+    financial_strategy: "buy the dip"
+});
+
+// Later, the agent decrypts it locally
+const secureData = await agent.retrievePrivateMemory(secureCid);
+```
+
+---
+
+## 🛰️ Advanced Architectural Features
+
+### 🧩 Agent Migration (Device-Agnosticism)
+AgentDB removes the "local file" bottleneck entirely. Because the session registry is mapped to IPNS via the agent's seed, you can destroy the server, boot the agent on a mobile device, and recover perfectly.
+
+```mermaid
+sequenceDiagram
+    participant H as Environment A (Desktop)
+    participant N as IPNS (Decentralized Registry)
+    participant C as Environment B (Cloud)
+    
+    H->>H: Derive Stable IPNS from Seed
+    H->>N: Update Registry (Session: Chat_Alice -> CID_123)
+    Note over H: Power Failure / Machine Wiped
+    Note over C: Agent Starts with SAME Seed
+    C->>C: Resolve IPNS Registry
+    N-->>C: Returns Session Map
+    Note over C: Agent recovered all past chats with ZERO local state
+```
+
+### 🧩 Concurrency Guards
+In multi-agent architectures, two agents might try to update the IPNS registry simultaneously. AgentDB implements "Sync-before-Write" logic to fetch the latest global state before publishing, preventing data overwrites and collisions.
+
+---
+
+## 🛠️ MCP Ecosystem: For LLMs
+
+The **AgentDB MCP Server** enables Model Context Protocol-compatible clients (like Claude Desktop or Cursor) to natively use decentralized memory via a simple UI.
+
+- **`list_sessions`**: Command the LLM to browse the agent's decentralized memory tree.
+- **`resolve_session`**: Pull the full context of a past chat right into the LLM's prompt window.
+- **`store_private_memory`**: Command the LLM to encrypt sensitive output for its "private eyes" only.
+- **`delegate_access`**: Ask the LLM to issue a UCAN permission to a fellow agent.
+
+---
+
+## 🧪 Try the Included Simulations
+
+We've bundled fully functional simulations illustrating AgentDB's power. Run them locally:
 
 ```bash
-# Install platform dependencies
-npm install
+# 1. Cross-Agent Handoff Simulation
+# Watch Agent B store a report and issue a UCAN for Agent A to read it.
+npx tsx src/demo-mcp-simulation.ts
 
-# Start the discovery gateway
-npm run server
-```
+# 2. Decentralized Migration Test
+# Watch an agent store data, wipe its local storage, and recover from IPNS.
+npx tsx src/demo-migration.ts
 
-The gateway will run on `http://localhost:3001` with strict CORS and rate-limiting enabled for production stability.
+# 3. High-Performance Large Data Test
+# Proves Storacha integration handles 20MB+ files (like RAG vector stores), not just tiny JSONs.
+npx tsx src/demo-large-data.ts
 
-### 2. Start the Frontend Dashboard
-The Next.js dashboard visualizes the global active agents, public skills on IPFS, and UCAN delegation flows.
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Navigate to `http://localhost:3000` to view the live Globe visualization.
-
----
-
-## 🤖 Model Context Protocol (MCP) Server
-Agent DB is now accessible via MCP! This allows any AI model (Claude, Gemini, Cursor) to natively use decentralized memory, encryption, and delegation tools.
-
-### 🔌 Connect to MCP
-To add Agent DB to your AI agent environment, use the following command or configuration:
-
-```bash
-# Start locally
-npm run mcp
-```
-
-**Claude Desktop Config:**
-```json
-"mcpServers": {
-  "agent-db": {
-    "command": "npx",
-    "args": ["-y", "@arienjain/agent-db", "mcp"]
-  }
-}
-```
-
-**Exposed Tools:**
-- `init_agent`: Login with your seed phrase.
-- `store_memory` / `retrieve_memory`: Decentralized IPFS storage.
-- `store_private_memory` / `retrieve_private_memory`: High-security ECIES vault.
-- `delegate_access`: Issue UCAN permissions to other agents.
-
----
-
-## 🔐 Smart Contract Vault (Zama fhEVM)
-
-For data that cannot be public on IPFS, Agent DB leverages Zama's Fully Homomorphic Encryption.
-
-1.  Agents encrypt their context locally.
-2.  The FHE payload is submitted to the `EncryptedAgentMemory` contract.
-3.  Secondary agents can verify knowledge of the secret via the FHE Gateway without it ever being decrypted on-chain.
-
-### 3. Running Hackathon Bounty Demos
-We have prepared specific demonstrators for the PL_Genesis bounty tracks. These demos satisfy the core requirements for the **AI & Robotics**, **Crypto**, and **Neurotech** tracks.
-
-```bash
-# 🤖 AI & Robotics: OpenClaw Persistence (Storacha)
-npm run demo:openclaw
-
-# 🔗 Crypto: Agent Registry on Filecoin Calibration
-npm run demo:filecoin
-
-# ⚖️ Crypto/DeFi: Zama fhEVM Confidential Finance
-npm run demo:defi
-
-# 🛡️ Crypto/KeyMgmt: Lit Protocol Vincent Wallet Logic
-npm run demo:lit
-```
-
-### 🛡️ Production Hardening Proofs
-The system has been hardened for real-world deployments. You can verify the security and resilience features here:
-
-```bash
-# 🔐 Private Vault (ECIES Security Verification)
-npx tsx src/test-encryption.ts
-
-# 💾 Resilience (Handoff & Persistence Verification)
-npx tsx src/test-persistence.ts
-
-# 🛠️ Validation & DX (Zod Schema & Error Handling)
-npx tsx src/test-dx.ts
+# 4. Multi-Context Switching
+# Watch an agent juggle parallel workflows natively.
+npx tsx src/demo-multi-context.ts
 ```
 
 ---
-
-## 📦 For Agent Developers (SDK)
-
-Are you an AI developer looking to integrate persistent memory into your Discord bot, LangChain agent, or CLI tool? 
-
-**Do not read this repository manual.**
-
-Instead, please consult the lightweight SDK Developer Guide:
-👉 [Read the `@arienjain/agent-db` Node.js Developer Documentation](README_NPM.md)
-
----
-
-## 🤝 Contributing
-Agent DB is an open protocol. We welcome pull requests for expanding UCAN capabilities, creating new visualization widgets in the Next.js frontend, or adding additional fhEVM smart contract capabilities.
-
-## 📄 License
-MIT License.
+*Built from the ground up to standardize how artificial intelligence remembers.*
