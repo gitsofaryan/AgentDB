@@ -408,7 +408,7 @@ export default function GetStartedPage() {
             <header className="gs-header">
                 <WarpCanvas />
                 <div className="gs-header-content">
-                    <Link href="/landing" className="gs-back-link">← Back</Link>
+                    <Link href="/" className="gs-back-link">← Back</Link>
                     <div className="gs-header-center">
                         <div className="gs-header-badge">
                             <span className="gs-header-badge-dot" />

@@ -1187,3 +1187,62 @@
   max-width: 100%;
   overflow-x: auto;
 }
+
+/* ── Product Hunt Style Badge ────────────────────────────────────────── */
+.lp-badge-ph-wrap {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.lp-badge-ph {
+  display: inline-flex;
+  align-items: center;
+  background: #ea532a;
+  /* Product Hunt Red */
+  padding: 6px 16px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 15px rgba(234, 83, 42, 0.4);
+  transition: transform 0.3s ease;
+}
+
+.lp-badge-ph:hover {
+  transform: scale(1.02);
+}
+
+.lp-ph-cat {
+  background: #fff;
+  color: #ea532a;
+  font-weight: 800;
+  font-size: 0.65rem;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  margin-right: 12px;
+  letter-spacing: 0.05em;
+}
+
+.lp-ph-text {
+  color: #fffb00;
+  /* Bright Yellow */
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 768px) {
+  .lp-badge-ph {
+    padding: 3px;
+  }
+
+  .lp-ph-cat {
+    padding: 3px 8px;
+    font-size: 0.6rem;
+    margin-right: 8px;
+  }
+
+  .lp-ph-text {
+    font-size: 0.7rem;
+    padding-right: 12px;
+  }
+}

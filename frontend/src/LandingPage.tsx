@@ -301,6 +301,7 @@ export default function LandingPage() {
             <nav className="lp-nav" aria-label="Site navigation">
                 <div className="lp-nav-inner">
                     <span className="lp-nav-logo">AGENT DB</span>
+
                     <div className="lp-nav-links">
                         <Link href="/get-started" className="lp-nav-link" id="nav-get-started">Get Started</Link>
                         <a href="https://www.npmjs.com/package/@arienjain/agent-db" target="_blank" rel="noreferrer" className="lp-nav-link" id="nav-npm">
@@ -315,10 +316,12 @@ export default function LandingPage() {
             {/* ── HERO ───────────────────────────────────────────────────── */}
             <section className="lp-hero" aria-label="Hero section">
                 <div className={`lp-hero-inner ${heroLoaded ? "lp-hero-inner--in" : ""}`}>
-                    {/* badge */}
-                    <div className="lp-badge">
-                        <span className="lp-badge-dot" />
-                        Decentralized Memory · IPFS · UCAN · FHE
+                    {/* Product Hunt style badge */}
+                    <div className="lp-badge-ph-wrap">
+                        <div className="lp-badge-ph">
+
+                            <span className="lp-ph-text">Built during PL Genesis Hackathon on IPFS · Decentralized AI Future</span>
+                        </div>
                     </div>
 
                     <h1 className="lp-hero-title">

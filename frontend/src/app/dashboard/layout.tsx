@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Agent Vault Dashboard | Decentralized AI Memory",
-    description: "Live dashboard to upload IPFS memories, issue UCAN delegations, and store FHE-encrypted secrets.",
+    title: "Agent Vault | Decentralized Memory Dashboard",
+    description: "Securely manage your AI agent's decentralized memory, delegations, and encrypted secrets.",
+    openGraph: {
+        title: "Agent Vault Dashboard",
+        description: "Control center for AgentDB memories and permissions.",
+        url: "https://agent-db.vercel.app/dashboard",
+        type: "website",
+    },
 };
 
 export default function DashboardLayout({
