@@ -338,8 +338,8 @@ export default function LandingPage() {
                     </h1>
 
                     <p className="lp-hero-sub">
-                        Every time you restart your agent, its entire reasoning — goals, logs,
-                        relationships, decisions — evaporates.&nbsp;
+                        Every time you restart your agent, its entire reasoning goals, logs,
+                        relationships, decisions evaporates.&nbsp;
                         <strong>Agent DB</strong> fixes that, permanently and without a central server.
                     </p>
 
