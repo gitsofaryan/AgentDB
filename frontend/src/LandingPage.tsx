@@ -589,6 +589,112 @@ export default function LandingPage() {
                 </Reveal>
             </section>
 
+            {/* ── ECOSYSTEM ─────────────────────────────────────────────── */}
+            <section className="lp-section lp-section--accent" id="ecosystem">
+                <Reveal className="lp-section-header">
+                    <span className="lp-section-eyebrow">The Ecosystem</span>
+                    <h2 className="lp-section-title">Drop-in memory for the modern AI stack</h2>
+                    <p className="lp-section-body">
+                        Agent DB acts as a specialized persistence layer for any AI framework.
+                    </p>
+                </Reveal>
+                <Reveal className="lp-eco-grid">
+                    {[
+                        {
+                            name: "OpenClaw",
+                            desc: "Persistent Personas",
+                            body: "Instantly resume an agent's learned personality and history on boot using direct CID restore.",
+                            icon: "🤖",
+                            color: "#6366f1"
+                        },
+                        {
+                            name: "LangChain",
+                            desc: "Hive Mind IPNS",
+                            body: "Replace BufferMemory with decentralized streams. Multiple agents can 'tune in' to a live thought process.",
+                            icon: "🦜",
+                            color: "#10b981"
+                        },
+                        {
+                            name: "Lit Protocol",
+                            desc: "Self-Sustaining Agency",
+                            body: "Provision non-custodial wallets for agents to autonomously pay their own IPFS storage bills.",
+                            icon: "🔥",
+                            color: "#fb7185"
+                        }
+                    ].map(eco => (
+                        <div key={eco.name} className="lp-eco-card" style={{ "--eco-color": eco.color } as React.CSSProperties}>
+                            <div className="lp-eco-header">
+                                <span className="lp-eco-icon">{eco.icon}</span>
+                                <div>
+                                    <div className="lp-eco-name">{eco.name}</div>
+                                    <div className="lp-eco-desc">{eco.desc}</div>
+                                </div>
+                            </div>
+                            <p className="lp-eco-body">{eco.body}</p>
+                        </div>
+                    ))}
+                </Reveal>
+            </section>
+
+            {/* ── ADVANCED FEATURES ─────────────────────────────────────── */}
+            <section className="lp-section">
+                <div className="lp-two-col">
+                    <Reveal className="lp-advanced-copy">
+                        <span className="lp-section-eyebrow">Advanced Architecture</span>
+                        <h2 className="lp-section-title">Device-Agnostic Recovery</h2>
+                        <p className="lp-section-body" style={{ margin: "0 0 2rem" }}>
+                            Agent DB removes the "local file" bottleneck. Because memory is mapped to IPNS via the agent's seed, you can destroy a server and recover perfectly on a mobile device with zero local state.
+                        </p>
+                        <div className="lp-feature-list">
+                            <div className="lp-feature-row"><span className="lp-dot" style={{ background: "#6366f1" }} /> <strong>Stable IPNS Mapping</strong> — Deterministic "Home Base" for memory registry.</div>
+                            <div className="lp-feature-row"><span className="lp-dot" style={{ background: "#10b981" }} /> <strong>Gateway Racing</strong> — Parallel retrieval from 4+ gateways for sub-500ms response.</div>
+                            <div className="lp-feature-row"><span className="lp-dot" style={{ background: "#f59e0b" }} /> <strong>Concurrency Guards</strong> — Sync-before-Write logic prevents state collisions.</div>
+                        </div>
+                    </Reveal>
+                    <Reveal className="lp-migration-visual">
+                        <div className="lp-migration-diagram">
+                            <div className="lp-mig-node">
+                                <div className="lp-mig-label">Desktop</div>
+                                <div className="lp-mig-icon">🖥️</div>
+                            </div>
+                            <div className="lp-mig-arrow">
+                                <div className="lp-mig-line" />
+                                <div className="lp-mig-ipns">IPNS Home Base</div>
+                            </div>
+                            <div className="lp-mig-node">
+                                <div className="lp-mig-label">Cloud / Mobile</div>
+                                <div className="lp-mig-icon">📱</div>
+                            </div>
+                        </div>
+                    </Reveal>
+                </div>
+            </section>
+
+            {/* ── SIMULATIONS ───────────────────────────────────────────── */}
+            <section className="lp-section lp-section--dark" id="simulations">
+                <Reveal className="lp-section-header">
+                    <span className="lp-section-eyebrow">Try it out</span>
+                    <h2 className="lp-section-title">Fully Functional Simulations</h2>
+                    <p className="lp-section-body">
+                        We've bundled functional demos proving decentralization, migration, and performance.
+                    </p>
+                </Reveal>
+                <div className="lp-sim-grid">
+                    {[
+                        { title: "Cross-Agent Handoff", desc: "Agent B stores a report and issues a UCAN for Agent A to read it.", cmd: "npx tsx src/demo-mcp-simulation.ts" },
+                        { title: "Decentralized Migration", desc: "Wipe local storage and watch an agent recover its entire mind from IPNS.", cmd: "npx tsx src/demo-migration.ts" },
+                        { title: "Large Data Persistence", desc: "High-performance test for 20MB+ files (RAG vector stores).", cmd: "npx tsx src/demo-large-data.ts" },
+                        { title: "Multi-Context Switch", desc: "Watch an agent juggle parallel workflows natively across devices.", cmd: "npx tsx src/demo-multi-context.ts" }
+                    ].map(sim => (
+                        <div key={sim.title} className="lp-sim-card">
+                            <h3 className="lp-sim-card-title">{sim.title}</h3>
+                            <p className="lp-sim-card-desc">{sim.desc}</p>
+                            <code className="lp-sim-card-cmd">{sim.cmd}</code>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
             {/* ── CTA ──────────────────────────────────────────────────── */}
             <section className="lp-cta-section" id="cta">
                 <Reveal className="lp-cta-inner">

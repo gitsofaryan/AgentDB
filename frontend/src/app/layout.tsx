@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Agent DB | Decentralized Memory for AI Agents",
   description:
     "Persistent, encrypted, and permission-controlled memory for autonomous AI agents powered by IPFS, UCAN, and Zama fhEVM.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

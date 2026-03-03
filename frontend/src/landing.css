@@ -744,6 +744,8 @@
 
 .lp-mcp-terminal {
   display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
   background: #0a0a12;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
@@ -1021,4 +1023,167 @@
   color: #c7d2fe;
   border-color: rgba(99, 102, 241, 0.45);
   transform: translateY(-1px);
+}
+
+/*  Ecosystem Grid  */
+.lp-eco-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.lp-eco-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
+  padding: 2.5rem;
+  transition: all 0.3s;
+}
+
+.lp-eco-card:hover {
+  border-color: var(--eco-color, #6366f1);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-5px);
+}
+
+.lp-eco-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.lp-eco-icon {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+}
+
+.lp-eco-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #f0f0f5;
+}
+
+.lp-eco-desc {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--eco-color, #6366f1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.lp-eco-body {
+  font-size: 0.95rem;
+  color: #8888a8;
+  line-height: 1.7;
+}
+
+/*  Migration Visual  */
+.lp-migration-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lp-migration-diagram {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 3rem;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lp-mig-node {
+  text-align: center;
+}
+
+.lp-mig-icon {
+  font-size: 3rem;
+  margin-top: 0.5rem;
+  filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3));
+}
+
+.lp-mig-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6366f1;
+  text-transform: uppercase;
+}
+
+.lp-mig-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lp-mig-line {
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #10b981);
+  position: relative;
+}
+
+.lp-mig-line::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: -10px;
+  color: #10b981;
+  font-size: 1.2rem;
+}
+
+.lp-mig-ipns {
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/*  Sim Grid  */
+.lp-sim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.lp-sim-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.lp-sim-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e0e0f0;
+  margin-bottom: 0.5rem;
+}
+
+.lp-sim-card-desc {
+  font-size: 0.85rem;
+  color: #6868a0;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+.lp-sim-card-cmd {
+  display: block;
+  font-family: monospace;
+  font-size: 0.7rem;
+  background: #000;
+  padding: 0.6rem;
+  border-radius: 8px;
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  max-width: 100%;
+  overflow-x: auto;
 }
