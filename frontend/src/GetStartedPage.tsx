@@ -46,6 +46,7 @@ function WarpCanvas() {
         }
 
         function draw() {
+            if (!ctx) return;
             ctx.clearRect(0, 0, w, h);
             // dark bg
             ctx.fillStyle = "#06060f";

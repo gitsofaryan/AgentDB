@@ -50,7 +50,7 @@ export class StorachaService {
     static async publishDelegation(delegationBytes: Uint8Array): Promise<string> {
         const client = await create();
 
-        const blob = new Blob([delegationBytes], { type: 'application/vnd.ipld.car' });
+        const blob = new Blob([delegationBytes as any], { type: 'application/vnd.ipld.car' });
         const files = [new File([blob], 'delegation.car')];
 
         console.log("Publishing UCAN delegation to IPFS...");
@@ -92,7 +92,7 @@ export class StorachaService {
     static async uploadRaw(data: Uint8Array, filename: string, mimeType: string = 'application/octet-stream'): Promise<string> {
         const client = await create();
 
-        const blob = new Blob([data], { type: mimeType });
+        const blob = new Blob([data as any], { type: mimeType });
         const files = [new File([blob], filename)];
 
         const cid = await client.uploadDirectory(files);
