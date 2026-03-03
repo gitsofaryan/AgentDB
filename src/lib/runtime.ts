@@ -27,8 +27,14 @@ export class AgentRuntime {
     public ipnsName: any = null;
     private ipnsRevision: any = null;
 
-    private constructor(signer: any) {
+    // Decentralized Session Registry (The Root of Memory)
+    private rootIpnsName: any = null;
+    private rootIpnsRevision: any = null;
+    private agentSeed: string | null = null;
+
+    private constructor(signer: any, seed: string | null = null) {
         this.signer = signer;
+        this.agentSeed = seed;
     }
 
     /**
@@ -47,7 +53,12 @@ export class AgentRuntime {
      */
     static async loadFromSeed(seed: string): Promise<AgentRuntime> {
         const signer = await UcanService.createIdentityFromSeed(seed);
-        return new AgentRuntime(signer);
+        const agent = new AgentRuntime(signer, seed);
+        
+        // Derive stable Root IPNS name for the Session Registry
+        agent.rootIpnsName = await StorachaService.deriveIpnsName(seed);
+        
+        return agent;
     }
 
     /**
@@ -119,10 +130,22 @@ export class AgentRuntime {
         delegation?: any
     ): Promise<object | null> {
         try {
-            if (delegation) {
-                const expectedIssuer = delegation.issuer.did();
+            let ucan = delegation;
+            if (typeof delegation === 'string') {
+                ucan = await UcanService.delegationFromBase64(delegation);
+            }
+
+            if (ucan) {
+                // Defensive check for the ucan object shape
+                const issuer = ucan.issuer || ucan.root?.issuer;
+                if (!issuer) {
+                    console.error("Malformed UCAN: Missing issuer. Keys:", Object.keys(ucan));
+                    throw new AuthenticationError("Malformed UCAN delegation: No issuer found.");
+                }
+
+                const expectedIssuer = typeof issuer.did === 'function' ? issuer.did() : issuer.toString();
                 const verification = UcanService.verifyDelegation(
-                    delegation,
+                    ucan,
                     expectedIssuer,
                     'agent/read'
                 );
@@ -148,22 +171,31 @@ export class AgentRuntime {
     // ═══════════════════════════════════════════════════════════════════
 
     /**
-     * Derives a stable prime256v1 encryption keypair from the agent's identity.
+     * Derives a stable X25519 encryption keypair from the agent's identity.
      * This uses a signature-based derivation for consistency across restarts.
      */
     private async getEncryptionKey(): Promise<{ publicKey: Buffer; privateKey: Buffer }> {
         // Sign a constant string to get a stable 32-byte seed
-        const seedBuffer = Buffer.from("agent-db-encryption-seed-v1");
+        const seedBuffer = Buffer.from("agent-db-x25519-encryption-seed-v1");
         const signature = await this.signer.signer.sign(seedBuffer);
         const seed = crypto.createHash('sha256').update(signature).digest();
         
-        // Use ECDH to get raw keys deterministically from the seed
-        const ecdh = crypto.createECDH('prime256v1');
-        ecdh.setPrivateKey(seed);
-        
+        // Node.js crypto X25519 PKCS#8 header (30 2e 02 01 00 30 05 06 03 2b 65 6e 04 22 04 20)
+        const pkcs8Header = Buffer.from('302e020100300506032b656e04220420', 'hex');
+        const spkiHeader = Buffer.from('302a300506032b656e032100', 'hex');
+
+        const privKeyObj = crypto.createPrivateKey({
+            key: Buffer.concat([pkcs8Header, seed]),
+            format: 'der',
+            type: 'pkcs8'
+        });
+
+        const pubKeyObj = crypto.createPublicKey(privKeyObj);
+        const pubKey = pubKeyObj.export({ format: 'der', type: 'spki' }).slice(spkiHeader.length);
+
         return {
-            publicKey: ecdh.getPublicKey(),
-            privateKey: ecdh.getPrivateKey()
+            publicKey: pubKey as Buffer,
+            privateKey: seed
         };
     }
 
@@ -184,7 +216,7 @@ export class AgentRuntime {
 
         const cid = await StorachaService.uploadMemory({
             _encrypted: true,
-            _encryptionMethod: 'ECIES-P256-AES256GCM',
+            _encryptionMethod: 'X25519-AES256GCM',
             payload: encryptedPayload
         });
 
@@ -543,5 +575,128 @@ export class AgentRuntime {
             console.error('Failed to retrieve via API:', err);
             return null;
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // DECENTRALIZED SESSION REGISTRY (Memory Indexing)
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Synchronizes the registry state with the decentralized network.
+     * Use this before any update to prevent "stale revision" errors.
+     */
+    private async syncRegistry(): Promise<void> {
+        if (!this.rootIpnsName) return;
+        
+        const latestRevision = await StorachaService.getLatestRevision(this.rootIpnsName.toString());
+        if (latestRevision) {
+            this.rootIpnsRevision = latestRevision;
+        }
+    }
+
+    private async saveRegistry(indexer: Record<string, string>) {
+        // 1. Production Hardening: Sync latest state before writing
+        await this.syncRegistry();
+
+        // 2. Store the Registry JSON on IPFS
+        const cid = await StorachaService.uploadMemory({
+            _type: 'agent_registry',
+            _agent: this.did,
+            index: indexer
+        });
+
+        if (this.rootIpnsName) {
+            // 3. Update the stable IPNS pointer
+            this.rootIpnsRevision = await StorachaService.publishToIpns(this.rootIpnsName, cid, this.rootIpnsRevision);
+        }
+
+        // 4. Fallback: Also save locally for offline-first support
+        const fs = await import('node:fs/promises');
+        const path = await import('node:path');
+        const dir = path.join(process.cwd(), '.agent_storage');
+        await fs.mkdir(dir, { recursive: true });
+        const safeDid = this.did.replace(/[^a-zA-Z0-9]/g, '_');
+        const indexPath = path.join(dir, `${safeDid}_index.json`);
+        await fs.writeFile(indexPath, JSON.stringify(indexer, null, 2), 'utf-8');
+    }
+
+    private async loadRegistry(): Promise<Record<string, string>> {
+        // 1. Try Decentralized Registry first (Device-Agnostic)
+        if (this.rootIpnsName) {
+            const cid = await StorachaService.resolveIpns(this.rootIpnsName.toString());
+            if (cid) {
+                const data: any = await StorachaService.fetchMemory(cid);
+                if (data && data.index) return data.index;
+            }
+        }
+
+        // 2. Fallback to Local Index
+        const fs = await import('node:fs/promises');
+        const path = await import('node:path');
+        const dir = path.join(process.cwd(), '.agent_storage');
+        const safeDid = this.did.replace(/[^a-zA-Z0-9]/g, '_');
+        const indexPath = path.join(dir, `${safeDid}_index.json`);
+        try {
+            const data = await fs.readFile(indexPath, 'utf-8');
+            return JSON.parse(data);
+        } catch {
+            return {};
+        }
+    }
+
+    async setNamespaceCid(namespace: string, cid: string): Promise<void> {
+        const index = await this.loadRegistry();
+        index[namespace] = cid;
+        await this.saveRegistry(index);
+    }
+
+    async getNamespaceCid(namespace: string): Promise<string | null> {
+        const index = await this.loadRegistry();
+        return index[namespace] || null;
+    }
+
+    /**
+     * Lists all session namespaces stored in the decentralized registry.
+     */
+    async listNamespaces(): Promise<string[]> {
+        const index = await this.loadRegistry();
+        return Object.keys(index);
+    }
+
+    // 1. Semantic Memory
+    async readSemanticMemory(): Promise<string> {
+        const cid = await this.getNamespaceCid('AGENTDB_MEM_SEMANTIC');
+        if (!cid) return "";
+        const data = await this.retrievePrivateMemory(cid).catch(() => null);
+        return data ? (data as any).markdown || "" : "";
+    }
+
+    async updateSemanticMemory(markdown: string): Promise<string> {
+        const cid = await this.storePrivateMemory({ markdown });
+        await this.setNamespaceCid('AGENTDB_MEM_SEMANTIC', cid);
+        return cid;
+    }
+
+    // 2. Daily Logs (Episodic)
+    async readDailyLog(dateStr: string): Promise<string> {
+        const cid = await this.getNamespaceCid(`AGENTDB_MEM_LOGS_${dateStr}`);
+        if (!cid) return "";
+        const data = await this.retrievePrivateMemory(cid).catch(() => null);
+        return data ? (data as any).markdown || "" : "";
+    }
+
+    async appendDailyLog(dateStr: string, markdown: string): Promise<string> {
+        const existing = await this.readDailyLog(dateStr);
+        const newContent = existing ? existing + "\n\n" + markdown : markdown;
+        const cid = await this.storePrivateMemory({ markdown: newContent });
+        await this.setNamespaceCid(`AGENTDB_MEM_LOGS_${dateStr}`, cid);
+        return cid;
+    }
+
+    // 3. Session Snapshots
+    async saveSessionSnapshot(sessionId: string, markdown: string): Promise<string> {
+        const cid = await this.storePrivateMemory({ markdown, sessionId, type: "snapshot" });
+        await this.setNamespaceCid(`AGENTDB_MEM_SNAP_${sessionId}`, cid);
+        return cid;
     }
 }

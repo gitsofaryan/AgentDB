@@ -3,6 +3,9 @@ import * as Name from 'w3name';
 import { NetworkError } from './errors.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import * as crypto from 'node:crypto';
+
+import * as Delegation from '@ucanto/core/delegation';
 
 export class StorachaService {
     // Persistent local cache directory for simulated memories when Storacha space is missing.
@@ -17,6 +20,17 @@ export class StorachaService {
     private static async getClient() {
         if (!StorachaService._cachedClient) {
             StorachaService._cachedClient = await create();
+            
+            // Auto-load delegation proof if it exists in the project root
+            const proofPath = path.join(process.cwd(), 'proof.ucan');
+            try {
+                const proofData = await fs.readFile(proofPath);
+                const delegation = await Delegation.extract(proofData);
+                await StorachaService._cachedClient.addSpace(delegation);
+            } catch (err) {
+                // If proof.ucan doesn't exist or is invalid, just proceed. 
+                // The client won't be able to upload until a proof is loaded manually or via the API.
+            }
         }
         return StorachaService._cachedClient;
     }
@@ -75,48 +89,61 @@ export class StorachaService {
             });
         } catch (err: unknown) {
              const error = err as Error;
-             if (error.message && error.message.includes('missing current space')) {
-                 const crypto = await import('crypto');
-                 const hash = crypto.createHash('sha256').update(JSON.stringify(memory)).digest('hex').slice(0, 32);
-                 const mockCid = `bafybeis1m${hash}`;
-                 
-                 // Persistent Fallback: Save to local filesystem
-                 const filePath = path.join(StorachaService.STORAGE_DIR, `${mockCid}.json`);
-                 await fs.writeFile(filePath, JSON.stringify(memory, null, 2));
-                 
-                 return mockCid;
-             }
+             console.error("DEBUG DUMP IPFS UPLOAD ERROR:", error);
              if (error instanceof NetworkError) throw error;
-             throw new NetworkError(`Failed to upload to IPFS: ${error.message}`);
+             throw new NetworkError(`Failed to upload to IPFS. Ensure Storacha CLI is configured: ${error.message}`);
         }
     }
 
+    private static cache = new Map<string, object>();
+    private static GATEWAYS = [
+        "https://storacha.link/ipfs/",
+        "https://cloudflare-ipfs.com/ipfs/",
+        "https://w3s.link/ipfs/",
+        "https://ipfs.io/ipfs/"
+    ];
+
     /**
      * Fetches agent memory from IPFS using a CID.
+     * Hardened: Uses "Gateway Racing" and local caching for high performance.
      * @param cid The content identifier of the stored memory.
      * @returns The parsed JSON object, or null if fetch fails.
      */
     static async fetchMemory(cid: string): Promise<object | null> {
-        // Intercept simulated mock CIDs for local testing
-        if (cid.startsWith('bafybeis1m')) {
-            const filePath = path.join(StorachaService.STORAGE_DIR, `${cid}.json`);
-            try {
-                const data = await fs.readFile(filePath, 'utf8');
-                return JSON.parse(data);
-            } catch (err) {
-                // Not found in local cache, proceed to network
-            }
-        }
-
-        const url = StorachaService.getGatewayUrl(cid) + '/memory.json';
+        // 1. Check local cache (Fastest)
+        if (this.cache.has(cid)) return this.cache.get(cid)!;
 
         try {
             return await StorachaService.withRetry(async () => {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new NetworkError(`Gateway returned ${response.status}: ${response.statusText}`);
+                // 2. Gateway Racing: Fire requests to multiple gateways in parallel
+                const controllers = this.GATEWAYS.map(() => new AbortController());
+                
+                const fetchPromises = this.GATEWAYS.map(async (baseUrl, index) => {
+                    const url = `${baseUrl}${cid}/memory.json`;
+                    const signal = (controllers[index] as AbortController).signal;
+                    const response = await fetch(url, { signal });
+                    
+                    if (!response.ok) throw new Error(`Gateway ${index} failed`);
+                    const data = await response.json();
+                    
+                    // Winner! Abort all other pending requests
+                    controllers.forEach((c, i) => { if (i !== index) c.abort(); });
+                    return data;
+                });
+
+                // Take the fastest successful responder
+                const winnerData = await Promise.any(fetchPromises);
+
+                // 3. Cache the result
+                if (winnerData) {
+                    this.cache.set(cid, winnerData);
+                    if (this.cache.size > 1000) {
+                        const firstKey = this.cache.keys().next().value;
+                        if (firstKey) this.cache.delete(firstKey);
+                    }
                 }
-                return await response.json();
+
+                return winnerData;
             });
         } catch (err: unknown) {
             console.error(`Failed to fetch memory from CID ${cid}:`, err);
@@ -205,6 +232,16 @@ export class StorachaService {
      */
     static async createIpnsName(): Promise<Name.WritableName> {
         return await Name.create();
+    }
+
+    /**
+     * Derives a stable IPNS mutable pointer from a seed.
+     * Use this for agent identities to ensure the index pointer is the same on all devices.
+     */
+    static async deriveIpnsName(seed: string): Promise<Name.WritableName> {
+        // Derive a stable 32-byte key from the seed
+        const key = crypto.createHash('sha256').update(seed + "_ipns_v1").digest();
+        return await Name.from(key);
     }
 
     /**

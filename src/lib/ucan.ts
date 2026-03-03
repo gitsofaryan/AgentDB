@@ -60,13 +60,19 @@ export class UcanService {
             abilitySchema.parse(ability);
             z.number().positive().parse(expirationHours);
             if (typeof issuer?.did !== 'function') throw new Error("Invalid issuer");
-            if (typeof audience?.did !== 'function') throw new Error("Invalid audience");
+            
+            // Audience can be a DID string or a Principal object
+            const audienceDid = typeof audience === 'string' ? audience : audience?.did?.();
+            if (!audienceDid) throw new Error("Invalid audience: missing DID");
         } catch (e: any) {
             throw new ValidationError('Invalid UCAN delegation parameters', e.errors || e.message);
         }
+
+        const audiencePrincipal = typeof audience === 'string' ? { did: () => audience } : audience;
+        
         return await delegate({
             issuer,
-            audience,
+            audience: audiencePrincipal as any,
             capabilities: [
                 {
                     with: issuer.did(),
@@ -94,16 +100,23 @@ export class UcanService {
         expectedIssuerDid: string,
         expectedAbility: string
     ): { valid: boolean; reason?: string } {
+        // Support both direct delegation and wrapped delegations
+        const issuer = delegation.issuer || delegation.root?.issuer;
+        if (!issuer) return { valid: false, reason: "Missing issuer in delegation object" };
+
+        const issuerDid = typeof issuer.did === 'function' ? issuer.did() : issuer.toString();
+
         // Check issuer matches
-        if (delegation.issuer.did() !== expectedIssuerDid) {
+        if (issuerDid !== expectedIssuerDid) {
             return {
                 valid: false,
-                reason: `Issuer mismatch: expected ${expectedIssuerDid}, got ${delegation.issuer.did()}`
+                reason: `Issuer mismatch: expected ${expectedIssuerDid}, got ${issuerDid}`
             };
         }
 
-        // Check capability exists
-        const cap = delegation.capabilities.find(
+        // Check capability exists - support broad range of delegation objects
+        const capabilities = delegation.capabilities || delegation.root?.capabilities || [];
+        const cap = capabilities.find(
             (c: any) => c.can === expectedAbility
         );
         if (!cap) {
