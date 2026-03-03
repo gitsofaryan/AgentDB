@@ -8,6 +8,9 @@
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "evmVersion": "paris",
           "optimizer": {
             "enabled": false,
@@ -37,13 +40,16 @@
         "AgentRegistry"
       ]
     },
-    "D:\\PLDG\\pl hacks\\agent-db\\contracts\\EncryptedAgentMemory.sol": {
-      "lastModificationDate": 1772085139843,
-      "contentHash": "b921be429731cebd715c37aa35372df5",
-      "sourceName": "contracts/EncryptedAgentMemory.sol",
+    "D:\\PLDG\\pl hacks\\agent-db\\contracts\\ConfidentialFinance.sol": {
+      "lastModificationDate": 1772518023643,
+      "contentHash": "d3802f18ae66c847403fb9c9df840845",
+      "sourceName": "contracts/ConfidentialFinance.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "evmVersion": "paris",
           "optimizer": {
             "enabled": false,
@@ -74,47 +80,7 @@
         "^0.8.24"
       ],
       "artifacts": [
-        "EncryptedAgentMemory"
-      ]
-    },
-    "D:\\PLDG\\pl hacks\\agent-db\\node_modules\\fhevm\\gateway\\lib\\Gateway.sol": {
-      "lastModificationDate": 1772043862015,
-      "contentHash": "33fc904ca6b2414f34b94ceee9ae74f9",
-      "sourceName": "fhevm/gateway/lib/Gateway.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "evmVersion": "paris",
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../../lib/Impl.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "Gateway",
-        "IGatewayContract",
-        "IKMSVerifier"
+        "ConfidentialFinance"
       ]
     },
     "D:\\PLDG\\pl hacks\\agent-db\\node_modules\\fhevm\\gateway\\GatewayCaller.sol": {
@@ -124,6 +90,9 @@
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "evmVersion": "paris",
           "optimizer": {
             "enabled": false,
@@ -163,6 +132,9 @@
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "evmVersion": "paris",
           "optimizer": {
             "enabled": false,
@@ -195,6 +167,49 @@
         "TFHE"
       ]
     },
+    "D:\\PLDG\\pl hacks\\agent-db\\node_modules\\fhevm\\gateway\\lib\\Gateway.sol": {
+      "lastModificationDate": 1772043862015,
+      "contentHash": "33fc904ca6b2414f34b94ceee9ae74f9",
+      "sourceName": "fhevm/gateway/lib/Gateway.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../lib/Impl.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "Gateway",
+        "IGatewayContract",
+        "IKMSVerifier"
+      ]
+    },
     "D:\\PLDG\\pl hacks\\agent-db\\node_modules\\fhevm\\lib\\Impl.sol": {
       "lastModificationDate": 1772043862091,
       "contentHash": "93d7e3908104c93e0038c718f41d7c54",
@@ -202,6 +217,9 @@
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "evmVersion": "paris",
           "optimizer": {
             "enabled": false,
@@ -233,6 +251,49 @@
         "IACL",
         "ITFHEExecutor",
         "Impl"
+      ]
+    },
+    "D:\\PLDG\\pl hacks\\agent-db\\contracts\\EncryptedAgentMemory.sol": {
+      "lastModificationDate": 1772085139843,
+      "contentHash": "b921be429731cebd715c37aa35372df5",
+      "sourceName": "contracts/EncryptedAgentMemory.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "fhevm/lib/TFHE.sol",
+        "fhevm/gateway/GatewayCaller.sol",
+        "fhevm/gateway/lib/Gateway.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "EncryptedAgentMemory"
       ]
     }
   }

@@ -1,19 +1,24 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  console.log("Preparing to deploy Encrypted Agent Memory Zama Contract...");
+  console.log("Preparing to deploy Zama Contracts (Sephora Testnet)...");
   
   const EncryptedAgentMemory = await ethers.getContractFactory("EncryptedAgentMemory");
-  const contract = await EncryptedAgentMemory.deploy();
+  const encryptedMemory = await EncryptedAgentMemory.deploy();
+  await encryptedMemory.waitForDeployment();
+  console.log(`✅ EncryptedAgentMemory deployed to: ${await encryptedMemory.getAddress()}`);
 
-  await contract.waitForDeployment();
+  const ConfidentialFinance = await ethers.getContractFactory("ConfidentialFinance");
+  const confidentialFinance = await ConfidentialFinance.deploy();
+  await confidentialFinance.waitForDeployment();
+  console.log(`✅ ConfidentialFinance deployed to: ${await confidentialFinance.getAddress()}`);
 
-  console.log(`\n✅ EncryptedAgentMemory deployed to: ${await contract.getAddress()}`);
   console.log("--------------------------------------------------");
-  console.log("Web3 Data Flow:");
-  console.log("1. Public Memory -> IPFS (Storacha)");
-  console.log("2. Private Memory -> Zama fhEVM (This Contract)");
-  console.log("3. Access Control -> UCAN Delegations");
+  console.log("Protocol Integration Overview:");
+  console.log("1. Multi-Agent Memory -> IPFS (Storacha)");
+  console.log("2. Private Agent Secrets -> EncryptedAgentMemory");
+  console.log("3. Risk Thresholds -> ConfidentialFinance");
+  console.log("4. Sovereign Access -> UCAN Delegations");
 }
 
 main().catch((error) => {

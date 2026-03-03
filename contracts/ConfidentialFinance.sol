@@ -55,7 +55,7 @@ contract ConfidentialFinance is GatewayCaller {
     /**
      * @dev Confidential logic: Compute if multiple encrypted strategies align
      */
-    function checkStrategyAlignment(euint8 otherStrategy) public view returns (ebool) {
+    function checkStrategyAlignment(euint8 otherStrategy) public returns (ebool) {
         euint8 myStrategy = strategyFlags[msg.sender];
         // Bitwise AND on encrypted data - only returns true handle if both are active
         ebool aligned = TFHE.ne(TFHE.and(myStrategy, otherStrategy), TFHE.asEuint8(0));

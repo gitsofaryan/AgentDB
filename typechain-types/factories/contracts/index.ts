@@ -2,4 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export { AgentRegistry__factory } from "./AgentRegistry__factory";
+export { ConfidentialFinance__factory } from "./ConfidentialFinance__factory";
 export { EncryptedAgentMemory__factory } from "./EncryptedAgentMemory__factory";

@@ -2,4 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { AgentRegistry } from "./AgentRegistry";
+export type { ConfidentialFinance } from "./ConfidentialFinance";
 export type { EncryptedAgentMemory } from "./EncryptedAgentMemory";

@@ -18,6 +18,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.AgentRegistry__factory>;
     getContractFactory(
+      name: "ConfidentialFinance",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ConfidentialFinance__factory>;
+    getContractFactory(
       name: "EncryptedAgentMemory",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.EncryptedAgentMemory__factory>;
@@ -44,6 +48,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.AgentRegistry>;
     getContractAt(
+      name: "ConfidentialFinance",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ConfidentialFinance>;
+    getContractAt(
       name: "EncryptedAgentMemory",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -73,6 +82,10 @@ declare module "hardhat/types/runtime" {
       name: "AgentRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AgentRegistry>;
+    deployContract(
+      name: "ConfidentialFinance",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ConfidentialFinance>;
     deployContract(
       name: "EncryptedAgentMemory",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -99,6 +112,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AgentRegistry>;
+    deployContract(
+      name: "ConfidentialFinance",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ConfidentialFinance>;
     deployContract(
       name: "EncryptedAgentMemory",
       args: any[],

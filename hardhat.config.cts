@@ -3,7 +3,15 @@ import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.24",
+  solidity: {
+    version: "0.8.24",
+    settings: {
+      metadata: {
+        // Automatically strips the absolute path / metadata hash from compiled IPFS references
+        bytecodeHash: "none",
+      }
+    }
+  },
   networks: {
     sephora: {
       url: "https://rpc.sephora.zama.ai",
@@ -17,4 +25,4 @@ const config: HardhatUserConfig = {
   },
 };
 
-export default config;
+module.exports = config;
