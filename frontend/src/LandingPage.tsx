@@ -344,13 +344,16 @@ export default function LandingPage() {
                     </p>
 
                     <div className="lp-hero-ctas">
+                        <Link href="/chat" className="lp-btn lp-btn--chat" id="cta-try-chat">
+                            💬 Try Decentralized Chat →
+                        </Link>
                         <Link href="/dashboard" className="lp-btn lp-btn--primary" id="cta-enter-vault">
                             Enter the Vault →
                         </Link>
-                        <Link href="/get-started" className="lp-btn lp-btn--secondary" id="cta-get-started">
+                        {/* <Link href="/get-started" className="lp-btn lp-btn--secondary" id="cta-get-started">
                             Get Started
-                        </Link>
-                        <a
+                        </Link> */}
+                        {/* <a
                             href="https://github.com/gitsofaryan/AgentDB"
                             target="_blank"
                             rel="noreferrer"
@@ -358,7 +361,7 @@ export default function LandingPage() {
                             id="cta-github"
                         >
                             GitHub
-                        </a>
+                        </a> */}
                     </div>
                 </div>
 
