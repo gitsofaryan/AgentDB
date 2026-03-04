@@ -428,7 +428,7 @@ export default function GetStartedPage() {
                                 id="npm-package-link"
                             >
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474C23.214 24 24 23.214 24 22.237V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z" /></svg>
-                                @arienjain/agent-db · v1.3.0
+                                @arienjain/agent-db · v1.4.1
                             </a>
                             <a
                                 href="https://github.com/IPFS-AI-Context-Flow"
@@ -556,9 +556,9 @@ const agent = await AgentRuntime.loadFromSeed(
 const cid = await agent.storePublicMemory(context);
 // bafybeigh4mvdjagff...
 
-// Retrieve from ANYWHERE later
-const data = await agent.retrievePublicMemory(cid);
-console.log(data.task); // "Analyze financial markets"`} />
+// Retrieve from ANYWHERE later (pass null for own memory)
+const data = await agent.retrievePublicMemory(cid, null);
+console.log(data.context.task); // "Analyze financial markets"`} />
                         </div>
                         <div className="gs-illu-wrap">
                             <IlluMemory />
@@ -690,9 +690,99 @@ console.log("Stream:", memory.getStreamId());`} />
                     </div>
                 </StepCard>
 
-                {/* STEP 8 — MCP */}
+                {/* STEP 8 — Session Registry */}
                 <StepCard
                     num="08"
+                    title="Session registry (IPNS index)"
+                    desc="Track all your agent's memory sessions in a decentralized IPNS-based index. Sessions survive server restarts and browser refreshes."
+                    accent="#10b981"
+                >
+                    <div className="gs-codes gs-codes--full">
+                        <CodeBlock lang="typescript" code={`// Save a session to the registry
+await agent.setNamespaceCid('trading_session_1', cid);
+
+// List all saved sessions
+const namespaces = await agent.listNamespaces();
+// ['trading_session_1', 'research_session_2', ...]
+
+// Get the CID for a specific session
+const sessionCid = await agent.getNamespaceCid('trading_session_1');
+
+// Load the full registry (IPNS-backed)
+const registry = await agent.loadRegistry();
+// { trading_session_1: 'bafybei...', research_session_2: 'bafybei...' }`} />
+                    </div>
+                </StepCard>
+
+                {/* STEP 9 — IPFS-Native Delegation */}
+                <StepCard
+                    num="09"
+                    title="IPFS-native context sharing"
+                    desc="Share memory between agents entirely through IPFS — no API server needed. Agent A publishes a delegation to IPFS, Agent B fetches it by CID."
+                    accent="#818cf8"
+                >
+                    <div className="gs-codes gs-codes--full">
+                        <CodeBlock lang="typescript" code={`// Agent A: Publish delegation to IPFS
+const { delegationCid, memoryCids } = 
+  await agentA.issueAndPublishDelegation(
+    agentB.identity,
+    'agent/read',
+    24  // valid for 24 hours
+  );
+
+// Send delegationCid to Agent B (Discord, HTTP, etc.)
+
+// Agent B: Fetch and verify the delegation from IPFS
+const delegation = await agentB.fetchAndVerifyDelegation(
+  delegationCid,
+  agentA.did,
+  'agent/read'
+);
+
+// Agent B: Use the delegation to read Agent A's memory
+for (const cid of memoryCids) {
+  const data = await agentB.retrieveWithDelegation(cid, agentA.did);
+  console.log(data);
+}`} />
+                    </div>
+                    <div className="gs-concept-banner" style={{ "--banner-color": "#818cf8" } as React.CSSProperties}>
+                        <span className="gs-concept-icon">🌐</span>
+                        <div>
+                            <strong>Fully Decentralized</strong> — No central API needed. Agent A publishes to IPFS, Agent B fetches from IPFS. The UCAN token is self-verifying.
+                        </div>
+                    </div>
+                </StepCard>
+
+                {/* STEP 10 — OpenClaw Memory */}
+                <StepCard
+                    num="10"
+                    title="OpenClaw structured memory"
+                    desc="Use OpenClaw-compatible memory patterns: semantic memory (knowledge base), daily logs (episodic), and session snapshots."
+                    accent="#fb7185"
+                >
+                    <div className="gs-codes gs-codes--full">
+                        <CodeBlock lang="typescript" code={`// Semantic memory — persistent knowledge base
+const cid = await agent.updateSemanticMemory(
+  '## User Preferences\n- Likes dark mode\n- Timezone: UTC+5:30'
+);
+const knowledge = await agent.readSemanticMemory();
+
+// Daily logs — episodic memory
+await agent.appendDailyLog('2026-03-05',
+  '- Analyzed 3 portfolios\n- Found arbitrage in ETH/USDC'
+);
+const log = await agent.readDailyLog('2026-03-05');
+
+// Session snapshots — full context dumps
+await agent.saveSessionSnapshot('session_42',
+  '## Summary\nCompleted 12 trades with 85% win rate'
+);`} />
+                    </div>
+                </StepCard>
+
+                {/* STEP 8 — MCP */}
+                <StepCard
+                    num="11"
                     title="Claude / Gemini / Cursor via MCP"
                     desc="Run the MCP server and any compatible AI model can call Agent DB tools as native functions — no code changes needed."
                     accent="#38bdf8"
@@ -717,7 +807,97 @@ console.log("Stream:", memory.getStreamId());`} />
                     </div>
                 </StepCard>
 
+                {/* STEP 12 — Web2 / REST API bridge */}
+                <StepCard
+                    num="12"
+                    title="Web2 / REST API bridge"
+                    desc="Not all agents are IPFS-native. Use the REST bridge to share UCAN-authorized memory with legacy Web2 systems or other agents via standard HTTP."
+                    accent="#38bdf8"
+                >
+                    <div className="gs-codes gs-codes--full">
+                        <CodeBlock lang="typescript" code={`// Agent A: Export delegation as Base64 for HTTP
+const base64Token = await agentA.exportDelegationForApi(delegation);
+
+// Agent B: Import and verify from API response
+const verified = await agentB.importDelegationFromApi(
+  base64Token,
+  agentA.did,
+  'agent/read'
+);
+
+// Agent B: Retrieve memory via REST gateway
+const data = await agentB.retrieveViaApi(
+  'https://api.agentdb.io', 
+  memoryCid,
+  base64Token
+);`} />
+                    </div>
+                </StepCard>
+
+                {/* STEP 13 — Consistency & Sync */}
+                <StepCard
+                    num="13"
+                    title="Multi-agent sync & consistency"
+                    desc="When multiple agents write to the same registry or stream, race conditions can occur. Use sync methods to ensure your agent is always reading the latest decentralized state."
+                    accent="#6366f1"
+                >
+                    <div className="gs-codes gs-codes--full">
+                        <CodeBlock lang="typescript" code={`// Force sync with the network before making changes
+await agent.syncRegistry();
+await agent.syncStream();
+
+// Now updates are guaranteed to apply on top of latest state
+await agent.setNamespaceCid('active_goal', newCid);`} />
+                    </div>
+                </StepCard>
+
+                {/* STEP 14 — Identity Best Practices */}
+                <StepCard
+                    num="14"
+                    title="Identity & Security Best Practices"
+                    desc="The Agent DB 'Zen': How to build robust, self-sovereign agentic systems."
+                    accent="#f59e0b"
+                >
+                    <p className="gs-small-tip">Follow these patterns to ensure your agent remains portable and secure.</p>
+                    <div className="gs-feature-list" style={{ marginTop: "1rem" }}>
+                        <div className="gs-feature-row"><span className="gs-dot" style={{ background: "#f59e0b" }} /><strong>Deterministic IDs:</strong> Always use <code>loadFromSeed()</code> with a secure 32-byte string. Same seed = Same DID.</div>
+                        <div className="gs-feature-row"><span className="gs-dot" style={{ background: "#10b981" }} /><strong>Grant Least Privilege:</strong> Use <code>agent/read</code> instead of <code>*</code> when delegating to sub-agents.</div>
+                        <div className="gs-feature-row"><span className="gs-dot" style={{ background: "#6366f1" }} /><strong>Encrypt Sensitives:</strong> Use <code>storePrivateMemory()</code> for API keys; the storage layer (Storacha) never sees your secrets.</div>
+                        <div className="gs-feature-row"><span className="gs-dot" style={{ background: "#38bdf8" }} /><strong>Content-Addressing:</strong> Treat CIDs as immutable truths. If the data changes, the CID changes.</div>
+                    </div>
+                </StepCard>
+
             </main>
+
+            {/* ── ARCHITECTURE OVERVIEW ────────────────────────────────── */}
+            <section className="gs-arch-section">
+                <div className="gs-arch-inner">
+                    <h2 className="gs-arch-title">The Agent DB Architecture</h2>
+                    <div className="gs-arch-grid">
+                        <div className="gs-arch-card">
+                            <div className="gs-arch-icon">🔑</div>
+                            <h3>1. Unified Identity</h3>
+                            <p>Self-sovereign Ed25519 keypairs derive DIDs that identify your agent globally across chains and IPFS.</p>
+                        </div>
+                        <div className="gs-arch-card">
+                            <div className="gs-arch-icon">📦</div>
+                            <h3>2. Storage Layer</h3>
+                            <p>Storacha provides the decentralized pinning infrastructure. Data is stored on IPFS/Filecoin for permanent availability.</p>
+                        </div>
+                        <div className="gs-arch-card">
+                            <div className="gs-arch-icon">🔒</div>
+                            <h3>3. Privacy Layer</h3>
+                            <p>X25519-AES-GCM for encrypted private memory and Zama FHE for on-chain verifiable computation.</p>
+                        </div>
+                        <div className="gs-arch-card">
+                            <div className="gs-arch-icon">🔗</div>
+                            <h3>4. Coordination Layer</h3>
+                            <p>UCAN tokens and IPNS names provide zero-trust authorization and mutable discovery without a central db.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
 
             {/* ── NEXT STEPS BANNER ────────────────────────────────────── */}
             <section className="gs-next-section">
@@ -726,6 +906,7 @@ console.log("Stream:", memory.getStreamId());`} />
                     <div className="gs-next-grid">
                         {[
                             { icon: "🖥️", label: "Open the Dashboard", href: "/dashboard", desc: "Interactive demo in browser" },
+                            { icon: "💬", label: "Live Agent Chat", href: "/chat", desc: "Chat with an AI and store on IPFS" },
                             { icon: "📦", label: "npm docs", href: "https://www.npmjs.com/package/@arienjain/agent-db?activeTab=readme", desc: "Full API reference", ext: true },
                             { icon: "🏗️", label: "Run demos", href: "https://github.com/IPFS-AI-Context-Flow", desc: "Storacha, Filecoin, Zama", ext: true },
                         ].map(({ icon, label, href, desc, ext }) => (

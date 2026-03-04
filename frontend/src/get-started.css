@@ -614,6 +614,82 @@
     flex-shrink: 0;
 }
 
+/* ── ARCHITECTURE SECTION ────────────────────────────────────────── */
+.gs-arch-section {
+    background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+    padding: 5rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.gs-arch-inner {
+    max-width: 1060px;
+    margin: 0 auto;
+}
+
+.gs-arch-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    text-align: center;
+    color: #f0f0f5;
+    margin-bottom: 3.5rem;
+    letter-spacing: -0.03em;
+}
+
+.gs-arch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.gs-arch-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 2rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-arch-card:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(99, 102, 241, 0.2);
+    transform: translateY(-5px);
+}
+
+.gs-arch-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.gs-arch-icon {
+    font-size: 2rem;
+    margin-bottom: 1.25rem;
+}
+
+.gs-arch-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e0e0f0;
+    margin-bottom: 0.75rem;
+}
+
+.gs-arch-card p {
+    font-size: 0.88rem;
+    color: #7878a0;
+    line-height: 1.6;
+}
+
+.gs-small-tip {
+    font-size: 0.82rem;
+    color: #50508a;
+    font-style: italic;
+    margin-bottom: 0.5rem;
+}
+
 /* ── FOOTER ─────────────────────────────────────────────────────────── */
 .gs-footer {
     text-align: center;
