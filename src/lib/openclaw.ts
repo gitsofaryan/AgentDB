@@ -30,7 +30,7 @@ export class AgentDbOpenClawMemory {
      */
     async resumeFromCid(cid: string): Promise<boolean> {
         console.log(`[OpenClaw Memory] Pulling persistent memory from Storacha CID: ${cid}`);
-        const state: any = await this.agentRuntime.retrievePublicMemory(cid);
+        const state: any = await this.agentRuntime.retrievePublicMemory(cid, null);
         
         if (state) {
             this.memoryQueue = state.messages || [];

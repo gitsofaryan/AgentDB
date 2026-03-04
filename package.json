@@ -4,15 +4,20 @@
   "description": "Persistent, encrypted, and permission-controlled memory for autonomous AI agents.",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
   },
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
     "dev": "npm run dev --prefix frontend",
-    "build": "tsup src/lib/index.ts --format cjs --format esm",
+    "build": "tsup src/lib/index.ts --format cjs --format esm --dts",
     "test": "vitest run tests/",
     "test:hardhat": "npx hardhat test",
     "server": "npx tsx src/server/index.ts",
