@@ -4,6 +4,17 @@
 
 ---
 
+## 🚀 Version 1.5.0 Now Live: Full Agentic Sovereignty
+
+We have significantly expanded the AgentDB ecosystem with a full suite of user-facing and developer-centric tools:
+
+- **💬 Decentralized Chat Application**: A native Next.js interface for interacting with self-sovereign agents. Every conversation is uniquely pinned to IPFS, encrypted using agent keys, and indexed via IPNS.
+- **📂 Session Registry**: Agents now maintain a decentralized "Memory Map" in their IPNS identity, allowing them to hot-swap between devices while retaining full session history.
+- **📚 Comprehensive SDK Reference**: A futuristic documentation hub covering all 39 SDK methods—from basic storage to advanced FHE on-chain vaults.
+- **🔒 Zero-Trust Delegation**: Integrated UCAN sharing directly into the UI, enabling one-click context handoffs between agents entirely through the decentralized web.
+
+---
+
 ## 🌎 The Vision: Solving the "AI Lobotomy"
 
 Today, AI agents suffer from a fundamental flaw: **amnesia**. Every time a process restarts, a server crashes, or a container scales down, the agent is "lobotomized." Their memory is either trapped in volatile local RAM or locked inside centralized SaaS databases that other agents cannot access. 
@@ -159,7 +170,12 @@ We've bundled fully functional simulations illustrating AgentDB's power. Run the
 # Watch Agent B store a report and issue a UCAN for Agent A to read it.
 npx tsx src/demo-mcp-simulation.ts
 
-# 2. Decentralized Migration Test
+# 2. Live Agent Chat Example (Frontend)
+# Interact with a live Gemini AI whose memory is backed by AgentDB and IPFS.
+cd frontend && npm run dev
+# Then open http://localhost:3000/chat
+
+# 3. Decentralized Migration Test
 # Watch an agent store data, wipe its local storage, and recover from IPNS.
 npx tsx src/demo-migration.ts
 

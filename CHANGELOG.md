@@ -2,6 +2,22 @@
 
 All notable changes to **Agent DB SDK** are documented here.
 
+## [1.5.0] - 2026-03-05
+### Added
+- **Decentralized Chat Application**: A full-featured chat interface (`/chat`) where memory is persisted entirely on IPFS/Storacha.
+- **Session Registry (IPNS)**: Implemented a decentralized index of all agent sessions using IPNS, allowing state recovery across any device without a central server.
+- **Private Memory (ECIES)**: Added military-grade encryption for agent memories using X25519 and AES-256-GCM.
+- **UCAN Delegation UI**: Added a "Share" button to issue cryptographically signed read permissions to other agents via IPFS.
+- **Premium Documentation Hub**: Revamped the `/get-started` page with 14 detailed steps covering the entire 39-method SDK.
+- **Architecture Overview**: Added high-level documentation for Identity, Storage, Privacy, and Coordination layers.
+- **Landing Page CTA**: Added a primary "Try Decentralized Chat" button to the hero section for direct SDK demonstration.
+
+### Fixed
+- **IPFS Propagation Delay**: Implemented a write-through cache and local file fallback in `StorachaService` to eliminate the delay when fetching freshly pinned CIDs.
+- **Chat Layout Stability**: Overhauled CSS for the chat page to ensure pinned headers, footers, and scrollable sidebars work perfectly even with 100+ active chats.
+- **Encrypted Memory Recovery**: Fixed the backend `recover` logic to auto-detect and decrypt private memory payloads.
+- **SDK Type Safety**: Resolved all linting issues and ensured proper `tsup` build exports for all 39 SDK methods.
+
 ## [1.4.1] - 2026-03-03
 ### Fixed
 - **NPM Publish**: Resolved version conflict for re-publishing.
