@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "fhevm/lib/TFHE.sol";
-import "fhevm/gateway/GatewayCaller.sol";
-import "fhevm/gateway/lib/Gateway.sol";
+import "@fhevm/solidity/lib/TFHE.sol";
+import "@fhevm/solidity/gateway/GatewayCaller.sol";
+import "@fhevm/solidity/gateway/lib/Gateway.sol";
 
 /**
  * @title ConfidentialFinance
