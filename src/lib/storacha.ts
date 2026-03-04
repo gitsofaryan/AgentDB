@@ -28,11 +28,25 @@ export class StorachaService {
                 const delegation = await Delegation.extract(proofData);
                 await StorachaService._cachedClient.addSpace(delegation);
             } catch (err) {
-                // If proof.ucan doesn't exist or is invalid, just proceed. 
-                // The client won't be able to upload until a proof is loaded manually or via the API.
+                console.warn('[AgentDB] No proof.ucan found at', proofPath, '— uploads will fail until a Storacha space is configured.');
             }
         }
         return StorachaService._cachedClient;
+    }
+
+    /**
+     * Checks if the Storacha client is properly configured with a proof.
+     * Use this before attempting uploads to provide clear error messages.
+     * @returns true if proof.ucan is loaded and a space is available.
+     */
+    static async isConfigured(): Promise<boolean> {
+        try {
+            const proofPath = path.join(process.cwd(), 'proof.ucan');
+            await fs.access(proofPath);
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -85,7 +99,16 @@ export class StorachaService {
                 const files = [new File([blob], 'memory.json')];
 
                 const cid = await client.uploadDirectory(files);
-                return cid.toString();
+                const cidStr = cid.toString();
+
+                // Write-through cache: save locally so fetchMemory doesn't need IPFS
+                this.cache.set(cidStr, memory);
+                try {
+                    const localPath = path.join(this.STORAGE_DIR, `${cidStr}.json`);
+                    await fs.writeFile(localPath, JSON.stringify(memory));
+                } catch { /* local cache is best-effort */ }
+
+                return cidStr;
             });
         } catch (err: unknown) {
              const error = err as Error;
@@ -105,17 +128,26 @@ export class StorachaService {
 
     /**
      * Fetches agent memory from IPFS using a CID.
-     * Hardened: Uses "Gateway Racing" and local caching for high performance.
+     * Hardened: Uses local cache, file cache, then Gateway Racing for maximum reliability.
      * @param cid The content identifier of the stored memory.
      * @returns The parsed JSON object, or null if fetch fails.
      */
     static async fetchMemory(cid: string): Promise<object | null> {
-        // 1. Check local cache (Fastest)
+        // 1. Check in-memory cache (Fastest — sub-ms)
         if (this.cache.has(cid)) return this.cache.get(cid)!;
 
+        // 2. Check local file cache (Fast — avoids IPFS for same-session data)
+        try {
+            const localPath = path.join(this.STORAGE_DIR, `${cid}.json`);
+            const localData = await fs.readFile(localPath, 'utf-8');
+            const parsed = JSON.parse(localData);
+            this.cache.set(cid, parsed);
+            return parsed;
+        } catch { /* not in local cache, try network */ }
+
+        // 3. Gateway Racing with retries (Network — for data from other agents/sessions)
         try {
             return await StorachaService.withRetry(async () => {
-                // 2. Gateway Racing: Fire requests to multiple gateways in parallel
                 const controllers = this.GATEWAYS.map(() => new AbortController());
                 
                 const fetchPromises = this.GATEWAYS.map(async (baseUrl, index) => {
@@ -131,12 +163,15 @@ export class StorachaService {
                     return data;
                 });
 
-                // Take the fastest successful responder
                 const winnerData = await Promise.any(fetchPromises);
 
-                // 3. Cache the result
                 if (winnerData) {
                     this.cache.set(cid, winnerData);
+                    // Also save to local file cache for persistence
+                    try {
+                        const localPath = path.join(this.STORAGE_DIR, `${cid}.json`);
+                        await fs.writeFile(localPath, JSON.stringify(winnerData));
+                    } catch { /* best-effort */ }
                     if (this.cache.size > 1000) {
                         const firstKey = this.cache.keys().next().value;
                         if (firstKey) this.cache.delete(firstKey);

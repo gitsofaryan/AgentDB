@@ -122,12 +122,12 @@ export class AgentRuntime {
      * If a delegation token is provided, it's verified before granting access.
      *
      * @param cid The CID of the memory to retrieve.
-     * @param delegation Optional UCAN delegation token (required if caller is not the owner).
+     * @param delegation UCAN delegation token for authorization. Pass null if accessing own memory.
      * @returns The parsed memory object, or null if unauthorized/failed.
      */
     async retrievePublicMemory(
         cid: string,
-        delegation?: any
+        delegation: any
     ): Promise<object | null> {
         try {
             let ucan = delegation;
