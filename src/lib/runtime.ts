@@ -620,7 +620,7 @@ export class AgentRuntime {
         await fs.writeFile(indexPath, JSON.stringify(indexer, null, 2), 'utf-8');
     }
 
-    private async loadRegistry(): Promise<Record<string, string>> {
+    public async loadRegistry(): Promise<Record<string, string>> {
         // 1. Try Decentralized Registry first (Device-Agnostic)
         if (this.rootIpnsName) {
             const cid = await StorachaService.resolveIpns(this.rootIpnsName.toString());
