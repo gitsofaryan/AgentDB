@@ -172,7 +172,7 @@ npx tsx src/demo-mcp-simulation.ts
 
 # 2. Live Agent Chat Example (Frontend)
 # Interact with a live Gemini AI whose memory is backed by AgentDB and IPFS.
-cd frontend && npm run dev
+npm run dev
 # Then open http://localhost:3000/chat
 
 # 3. Decentralized Migration Test

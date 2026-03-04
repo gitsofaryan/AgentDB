@@ -8,8 +8,10 @@ Are your agents losing their long-term reasoning when you restart their containe
 
 1. **Self-Sovereign Identity**: Your agent gets an Ed25519 `did:key` identity automatically.
 2. **Infinite Context**: Save agent knowledge/state continuously mapping to decentralized IPFS identifiers (CIDs).
-3. **The Hive Mind (IPNS)**: Subscribe to other agents' mutable memory streams in real-time.
-4. **Verifiable Swarm Delegation**: Use UCANs to grant *Agent B* temporary cryptographic permission to read *Agent A's* memory stream without a centralized database.
+3. **Private Memory**: Encrypt sensitive agent memories using ECIES (X25519 + AES-256-GCM) so only the agent or delegates can read them.
+4. **Session Registry**: Maintain a decentralized index of all past interactions in the agent's mutable IPNS registry.
+5. **The Hive Mind (IPNS)**: Subscribe to other agents' mutable memory streams in real-time.
+6. **Verifiable Swarm Delegation**: Use UCANs to grant *Agent B* temporary cryptographic permission to read *Agent A's* memory stream without a centralized database.
 
 ## Installation
 
