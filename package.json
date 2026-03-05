@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "dev": "npm run dev --prefix frontend",
-    "build": "tsup src/lib/index.ts --format cjs --format esm --dts",
+    "build": "npx tsup src/lib/index.ts --format cjs --format esm --dts",
     "test": "vitest run tests/",
     "test:hardhat": "npx hardhat test",
     "server": "npx tsx src/server/index.ts",
