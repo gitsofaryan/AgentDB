@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import styles from "./page.module.css";
 
 type Message = {
@@ -333,8 +334,11 @@ export default function ChatPage() {
                                     </div>
                                 ) : (
                                     savedMemories.map(mem => (
-                                        <div key={mem.id} className={styles.sessionCard} onClick={() => loadFromMemory(mem)}>
-                                            <div className={styles.sessionTitle}>{mem.title}</div>
+                                        <div key={mem.id} className={`${styles.sessionCard} ${mem.cid === lastPinnedCid ? styles.sessionActive : ''}`} onClick={() => loadFromMemory(mem)}>
+                                            <div className={styles.sessionTitle}>
+                                                {mem.cid === lastPinnedCid && <span className={styles.activeDot} />}
+                                                {mem.title}
+                                            </div>
                                             <div className={styles.sessionMeta}>
                                                 <span className={mem.encrypted ? styles.cidTagEncrypted : styles.cidTag}>
                                                     {mem.encrypted ? '🔒' : '📌'} {mem.cid.substring(0, 12)}...
@@ -468,7 +472,13 @@ export default function ChatPage() {
                                     {msg.role === "agent" && <div className={styles.agentAvatar}><span>🤖</span></div>}
                                     <div className={styles.messageContent}>
                                         <div className={`${styles.bubble} ${msg.role === "user" ? styles.userBubble : styles.agentBubble}`}>
-                                            {msg.content}
+                                            {msg.role === "agent" ? (
+                                                <div className={styles.markdownContent}>
+                                                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                                </div>
+                                            ) : (
+                                                msg.content
+                                            )}
                                         </div>
                                         <div className={styles.meta}>
                                             {msg.role === "user" ? "You" : `Agent · ${currentModel.name}`}
