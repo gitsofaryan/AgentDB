@@ -1,6 +1,20 @@
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { AgentRuntime } from "@arienjain/agent-db";
+import { writeFileSync, existsSync } from "fs";
+import { join } from "path";
+
+// Write proof.ucan at runtime from env var (for Vercel serverless)
+// The SDK reads proof.ucan from process.cwd() to authenticate with Storacha
+const proofPath = join(process.cwd(), "proof.ucan");
+if (!existsSync(proofPath) && process.env.STORACHA_PROOF) {
+    try {
+        writeFileSync(proofPath, Buffer.from(process.env.STORACHA_PROOF, "base64"));
+        console.log("[Runtime] ✅ Wrote proof.ucan from STORACHA_PROOF env var to", proofPath);
+    } catch (e) {
+        console.warn("[Runtime] ⚠️ Could not write proof.ucan:", e);
+    }
+}
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || "" });
 
