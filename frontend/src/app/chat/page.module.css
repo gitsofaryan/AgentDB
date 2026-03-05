@@ -1175,10 +1175,21 @@
     letter-spacing: -0.02em;
 }
 
-.markdownContent h1 { font-size: 1.3rem; }
-.markdownContent h2 { font-size: 1.15rem; }
-.markdownContent h3 { font-size: 1.05rem; }
-.markdownContent h4 { font-size: 0.95rem; }
+.markdownContent h1 {
+    font-size: 1.3rem;
+}
+
+.markdownContent h2 {
+    font-size: 1.15rem;
+}
+
+.markdownContent h3 {
+    font-size: 1.05rem;
+}
+
+.markdownContent h4 {
+    font-size: 0.95rem;
+}
 
 .markdownContent h1:first-child,
 .markdownContent h2:first-child,
@@ -1255,4 +1266,131 @@
     height: 1px;
     background: rgba(255, 255, 255, 0.08);
     margin: 1em 0;
+}
+
+/* ═══════ STORACHA CONNECTION ═══════ */
+.storachaConnected {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+    color: #10b981;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.storachaGreenDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    animation: pulseDot 2s ease-in-out infinite;
+}
+
+.storachaDisconnect {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: #666;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.storachaDisconnect:hover {
+    color: #ef4444;
+}
+
+.storachaWaiting {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 10px;
+    color: #fbbf24;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* ═══════ LOGIN MODAL ═══════ */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+.modalContent {
+    background: rgba(14, 15, 25, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.modalTitle {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #f0f0f5;
+    margin: 0 0 0.5rem 0;
+}
+
+.modalDesc {
+    font-size: 0.85rem;
+    color: #7878a0;
+    line-height: 1.6;
+    margin: 0 0 1.25rem 0;
+}
+
+.modalVerify {
+    text-align: center;
+    padding: 1.5rem 0;
+    color: #fbbf24;
+    font-size: 0.9rem;
+}
+
+.modalSubtext {
+    font-size: 0.78rem;
+    color: #7878a0;
+    margin-top: 0.5rem;
+}
+
+.modalError {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.modalClose {
+    display: block;
+    width: 100%;
+    margin-top: 0.75rem;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #888;
+    padding: 0.6rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modalClose:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #ccc;
 }

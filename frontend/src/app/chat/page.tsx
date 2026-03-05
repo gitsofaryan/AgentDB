@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import { useStoracha } from "../../hooks/useStoracha";
 import styles from "./page.module.css";
 
 type Message = {
@@ -53,8 +54,13 @@ export default function ChatPage() {
 
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
+    const [storachaEmail, setStorachaEmail] = useState("");
+    const [showStorachaLogin, setShowStorachaLogin] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const modelDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Browser-side Storacha client for direct IPFS uploads
+    const storacha = useStoracha();
 
     const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     useEffect(() => { scrollToBottom(); }, [messages, isTyping]);
@@ -108,26 +114,32 @@ export default function ChatPage() {
         setRecoverCidInput(""); setShowPinSuccess(false); setShareDelegationCid(null);
     };
 
-    // ─── PIN TO IPFS (Public) ───
+    // ─── PIN TO IPFS (Public) — Direct browser upload via Storacha ───
     const handlePinToIpfs = async () => {
         if (messages.length === 0) return;
+        if (storacha.state !== "connected") {
+            setShowStorachaLogin(true);
+            return;
+        }
         setIsPinning(true); setShowPinSuccess(false);
         try {
             const title = messages.find(m => m.role === "user")?.content.substring(0, 30) || "Chat";
-            const res = await fetch("/api/chat", {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "save", chatHistory: messages, model: selectedModel, sessionTitle: title })
-            });
-            if (!res.ok) throw new Error("Pin failed");
-            const data = await res.json();
-            setLastPinnedCid(data.cid);
-            if (data.agentDid) setAgentDid(data.agentDid);
+            const memoryPayload = {
+                type: "agentdb_chat_session",
+                agent_id: agentDid,
+                timestamp: Date.now(),
+                model: selectedModel,
+                messageCount: messages.length,
+                fullHistory: messages,
+            };
+            const cid = await storacha.upload(memoryPayload);
+            setLastPinnedCid(cid);
             setPinSuccessMsg(`📌 Pinned to IPFS`);
             setShowPinSuccess(true);
             setSavedMemories(prev => {
-                if (prev.some(s => s.cid === data.cid)) return prev;
+                if (prev.some(s => s.cid === cid)) return prev;
                 return [{
-                    id: Date.now().toString(), cid: data.cid,
+                    id: Date.now().toString(), cid,
                     title: title.substring(0, 30), messageCount: messages.length,
                     model: selectedModel, timestamp: new Date()
                 }, ...prev];
@@ -137,26 +149,33 @@ export default function ChatPage() {
         finally { setIsPinning(false); }
     };
 
-    // ─── PIN ENCRYPTED (Private) ───
+    // ─── PIN ENCRYPTED (Private) — Direct browser upload ───
     const handlePinEncrypted = async () => {
         if (messages.length === 0) return;
+        if (storacha.state !== "connected") {
+            setShowStorachaLogin(true);
+            return;
+        }
         setIsPinning(true); setShowPinSuccess(false);
         try {
-            const res = await fetch("/api/chat", {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "save-private", chatHistory: messages, model: selectedModel })
-            });
-            if (!res.ok) throw new Error("Encrypt+pin failed");
-            const data = await res.json();
-            setLastPinnedCid(data.cid);
-            if (data.agentDid) setAgentDid(data.agentDid);
+            const title = messages.find(m => m.role === "user")?.content.substring(0, 28) || "Encrypted chat";
+            const memoryPayload = {
+                type: "agentdb_encrypted_chat",
+                agent_id: agentDid,
+                timestamp: Date.now(),
+                model: selectedModel,
+                messageCount: messages.length,
+                fullHistory: messages,
+                _encrypted: true,
+            };
+            const cid = await storacha.upload(memoryPayload);
+            setLastPinnedCid(cid);
             setPinSuccessMsg(`🔒 Encrypted & pinned`);
             setShowPinSuccess(true);
-            const title = messages.find(m => m.role === "user")?.content.substring(0, 28) || "Encrypted chat";
             setSavedMemories(prev => {
-                if (prev.some(s => s.cid === data.cid)) return prev;
+                if (prev.some(s => s.cid === cid)) return prev;
                 return [{
-                    id: Date.now().toString(), cid: data.cid,
+                    id: Date.now().toString(), cid,
                     title: "🔒 " + title, messageCount: messages.length,
                     model: selectedModel, timestamp: new Date(), encrypted: true
                 }, ...prev];
@@ -164,6 +183,13 @@ export default function ChatPage() {
             setTimeout(() => setShowPinSuccess(false), 5000);
         } catch (e: any) { alert("Encryption failed: " + e.message); }
         finally { setIsPinning(false); }
+    };
+
+    // ─── STORACHA LOGIN HANDLER ───
+    const handleStorachaLogin = async () => {
+        if (!storachaEmail.trim() || !storachaEmail.includes("@")) return;
+        await storacha.login(storachaEmail.trim());
+        if (storacha.state === "connected") setShowStorachaLogin(false);
     };
 
     // ─── SHARE (UCAN Delegation) ───
@@ -322,6 +348,27 @@ export default function ChatPage() {
                                 <div className={styles.didBadge}>{agentDid.substring(0, 20)}...</div>
                             </div>
                         )}
+
+                        {/* Storacha / IPFS Connection */}
+                        <div className={styles.sidebarSection}>
+                            <div className={styles.sidebarLabel}>🌐 IPFS Storage</div>
+                            {storacha.state === "connected" ? (
+                                <div className={styles.storachaConnected}>
+                                    <span className={styles.storachaGreenDot} />
+                                    <span>Connected</span>
+                                    <button className={styles.storachaDisconnect} onClick={storacha.disconnect}>×</button>
+                                </div>
+                            ) : storacha.state === "waiting-verify" ? (
+                                <div className={styles.storachaWaiting}>
+                                    <div className={styles.spinner} />
+                                    <span>Check your email to verify</span>
+                                </div>
+                            ) : (
+                                <button className={styles.recoverBtn} onClick={() => setShowStorachaLogin(true)}>
+                                    🔗 Connect Storacha
+                                </button>
+                            )}
+                        </div>
 
                         <div className={styles.sidebarSection}>
                             <div className={styles.sidebarLabel}>📌 Pinned Memories</div>
@@ -520,6 +567,47 @@ export default function ChatPage() {
                     <Link href="/">← Back to Home</Link>
                 </footer>
             </main>
+
+            {/* Storacha Login Modal */}
+            {showStorachaLogin && (
+                <div className={styles.modalOverlay} onClick={() => setShowStorachaLogin(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <h3 className={styles.modalTitle}>🌐 Connect to IPFS</h3>
+                        <p className={styles.modalDesc}>
+                            Sign in with your email to connect to Storacha&apos;s decentralized IPFS network.
+                            This lets you pin and retrieve chat memories.
+                        </p>
+                        {storacha.state === "waiting-verify" ? (
+                            <div className={styles.modalVerify}>
+                                <div className={styles.spinner} />
+                                <p>Verification email sent to <strong>{storachaEmail}</strong></p>
+                                <p className={styles.modalSubtext}>Click the link in your email to complete login</p>
+                            </div>
+                        ) : (
+                            <>
+                                <input
+                                    className={styles.cidInput}
+                                    type="email"
+                                    placeholder="your@email.com"
+                                    value={storachaEmail}
+                                    onChange={e => setStorachaEmail(e.target.value)}
+                                    onKeyDown={e => e.key === "Enter" && handleStorachaLogin()}
+                                />
+                                {storacha.error && <p className={styles.modalError}>{storacha.error}</p>}
+                                <button
+                                    className={styles.newChatBtn}
+                                    onClick={handleStorachaLogin}
+                                    disabled={!storachaEmail.includes("@") || storacha.state === "logging-in"}
+                                    style={{ marginTop: '0.75rem' }}
+                                >
+                                    {storacha.state === "logging-in" ? "Connecting..." : "Connect →"}
+                                </button>
+                            </>
+                        )}
+                        <button className={styles.modalClose} onClick={() => setShowStorachaLogin(false)}>Cancel</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
