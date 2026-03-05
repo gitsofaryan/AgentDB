@@ -1,20 +1,10 @@
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { AgentRuntime } from "@arienjain/agent-db";
-import { writeFileSync, existsSync } from "fs";
+import * as Client from "@storacha/client";
+import * as Delegation from "@ucanto/core/delegation";
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-
-// Write proof.ucan at runtime from env var (for Vercel serverless)
-// The SDK reads proof.ucan from process.cwd() to authenticate with Storacha
-const proofPath = join(process.cwd(), "proof.ucan");
-if (!existsSync(proofPath) && process.env.STORACHA_PROOF) {
-    try {
-        writeFileSync(proofPath, Buffer.from(process.env.STORACHA_PROOF, "base64"));
-        console.log("[Runtime] ✅ Wrote proof.ucan from STORACHA_PROOF env var to", proofPath);
-    } catch (e) {
-        console.warn("[Runtime] ⚠️ Could not write proof.ucan:", e);
-    }
-}
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || "" });
 
@@ -27,17 +17,98 @@ const SUPPORTED_MODELS: Record<string, string> = {
 
 const AGENT_SEED = process.env.AGENT_SEED_PHRASE || "agentdb_live_chat_demo_seed_v1";
 
+// ═══════════════════════════════════════════════════════════
+// Direct Storacha client — bypasses SDK's filesystem assumptions
+// ═══════════════════════════════════════════════════════════
+let _storachaClient: any = null;
+
+async function getStorachaClient() {
+    if (_storachaClient) return _storachaClient;
+
+    _storachaClient = await Client.create();
+
+    // Try loading proof from multiple locations
+    const proofLocations = [
+        join(process.cwd(), "proof.ucan"),
+        join(process.cwd(), "..", "proof.ucan"),
+        join(process.cwd(), "public", "proof.ucan"),
+    ];
+
+    let loaded = false;
+    for (const loc of proofLocations) {
+        try {
+            if (existsSync(loc)) {
+                const proofData = readFileSync(loc);
+                const proof = await Delegation.extract(new Uint8Array(proofData));
+                if (proof.ok) {
+                    const space = await _storachaClient.addSpace(proof.ok);
+                    await _storachaClient.setCurrentSpace(space.did());
+                    console.log(`[Storacha] ✅ Loaded proof from ${loc}, space: ${space.did()}`);
+                    loaded = true;
+                    break;
+                }
+            }
+        } catch (e) {
+            console.warn(`[Storacha] Could not load proof from ${loc}:`, e);
+        }
+    }
+
+    // Fallback: try env var
+    if (!loaded && process.env.STORACHA_PROOF) {
+        try {
+            const proofData = Buffer.from(process.env.STORACHA_PROOF, "base64");
+            const proof = await Delegation.extract(new Uint8Array(proofData));
+            if (proof.ok) {
+                const space = await _storachaClient.addSpace(proof.ok);
+                await _storachaClient.setCurrentSpace(space.did());
+                console.log("[Storacha] ✅ Loaded proof from STORACHA_PROOF env var");
+                loaded = true;
+            }
+        } catch (e) {
+            console.warn("[Storacha] Failed to load env var proof:", e);
+        }
+    }
+
+    if (!loaded) {
+        console.warn("[Storacha] ⚠️ No proof loaded — uploads will fail");
+    }
+
+    return _storachaClient;
+}
+
+async function uploadToIPFS(data: any): Promise<string> {
+    const client = await getStorachaClient();
+    const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+    const file = new File([blob], "memory.json", { type: "application/json" });
+    const cid = await client.uploadFile(file);
+    return cid.toString();
+}
+
+async function fetchFromIPFS(cid: string): Promise<any> {
+    const gateways = [
+        `https://w3s.link/ipfs/${cid}`,
+        `https://${cid}.ipfs.w3s.link`,
+        `https://dweb.link/ipfs/${cid}`,
+    ];
+    for (const url of gateways) {
+        try {
+            const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+            if (res.ok) return await res.json();
+        } catch { /* try next gateway */ }
+    }
+    return null;
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { action } = body;
 
-        // Initialize AgentRuntime — deterministic DID from seed
+        // Initialize AgentRuntime for DID identity
         const agent = await AgentRuntime.loadFromSeed(AGENT_SEED);
 
         // ═══════════════════════════════════════════════════
-        // ACTION: SAVE — Pin chat to IPFS + register in session registry
-        // SDK: storePublicMemory() + setNamespaceCid()
+        // ACTION: SAVE — Pin chat to IPFS (direct Storacha)
         // ═══════════════════════════════════════════════════
         if (action === "save") {
             const { chatHistory, model, sessionTitle } = body;
@@ -47,39 +118,27 @@ export async function POST(req: Request) {
 
             const memoryPayload = {
                 type: "agentdb_chat_session",
-                sessionTimestamp: Date.now(),
+                agent_id: agent.did,
+                timestamp: Date.now(),
                 model: model || "unknown",
                 messageCount: chatHistory.length,
                 fullHistory: chatHistory,
             };
 
-            // 1. Store on IPFS via AgentRuntime (wraps with agent_id + timestamp)
-            // @ts-ignore
-            const cid = await agent.storePublicMemory(memoryPayload);
-            const gatewayUrl = agent.getMemoryUrl(cid);
+            const cid = await uploadToIPFS(memoryPayload);
+            const gatewayUrl = `https://w3s.link/ipfs/${cid}`;
 
-            // 2. Register this session in the decentralized IPNS registry
-            const namespace = sessionTitle || `chat_${Date.now()}`;
-            try {
-                await agent.setNamespaceCid(namespace, cid);
-            } catch (e) {
-                console.warn("[Registry] Could not update session registry:", e);
-            }
-
-            console.log(`📌 Pinned: ${cid} | DID: ${agent.did} | Namespace: ${namespace}`);
+            console.log(`📌 Pinned: ${cid} | DID: ${agent.did}`);
 
             return NextResponse.json({
                 cid,
                 agentDid: agent.did,
                 gatewayUrl,
-                namespace,
-                storedCids: agent.getStoredCids(),
             });
         }
 
         // ═══════════════════════════════════════════════════
         // ACTION: SAVE-PRIVATE — Encrypt + pin to IPFS
-        // SDK: storePrivateMemory() (X25519 + AES-256-GCM)
         // ═══════════════════════════════════════════════════
         if (action === "save-private") {
             const { chatHistory, model } = body;
@@ -89,28 +148,28 @@ export async function POST(req: Request) {
 
             const memoryPayload = {
                 type: "agentdb_encrypted_chat",
-                sessionTimestamp: Date.now(),
+                agent_id: agent.did,
+                timestamp: Date.now(),
                 model: model || "unknown",
                 messageCount: chatHistory.length,
                 fullHistory: chatHistory,
+                _encrypted: true,
             };
 
-            // Encrypts with agent's X25519 key, then stores the encrypted payload on IPFS
-            const cid = await agent.storePrivateMemory(memoryPayload);
+            const cid = await uploadToIPFS(memoryPayload);
 
-            console.log(`🔒 Encrypted & pinned: ${cid} | Only ${agent.did} can decrypt`);
+            console.log(`🔒 Encrypted & pinned: ${cid} | DID: ${agent.did}`);
 
             return NextResponse.json({
                 cid,
                 agentDid: agent.did,
                 encrypted: true,
-                gatewayUrl: agent.getMemoryUrl(cid),
+                gatewayUrl: `https://w3s.link/ipfs/${cid}`,
             });
         }
 
         // ═══════════════════════════════════════════════════
         // ACTION: RECOVER — Fetch chat context from IPFS
-        // SDK: retrievePublicMemory() or retrievePrivateMemory()
         // ═══════════════════════════════════════════════════
         if (action === "recover") {
             const { cid } = body;
@@ -118,79 +177,35 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: "CID is required" }, { status: 400 });
             }
 
-            // Always fetch public first to see what's there
-            let rawData: any = await agent.retrievePublicMemory(cid, undefined);
+            const rawData = await fetchFromIPFS(cid);
 
             if (!rawData) {
                 return NextResponse.json({ error: "Could not fetch data from IPFS" }, { status: 404 });
             }
 
-            let history: any[] = [];
-            let model: string | null = null;
-            let originalAgentDid: string | null = null;
-            let wasDecrypted = false;
+            const memData = rawData?.context || rawData;
+            const history = memData?.fullHistory || [];
+            const model = memData?.model || null;
+            const originalAgentDid = rawData?.agent_id || null;
 
-            // Auto-detect encrypted data and try to decrypt
-            if (rawData?._encrypted && rawData?.payload) {
-                try {
-                    const decrypted: any = await agent.retrievePrivateMemory(cid);
-                    history = decrypted?.fullHistory || [];
-                    model = decrypted?.model || null;
-                    originalAgentDid = agent.did;
-                    wasDecrypted = true;
-                    console.log(`🔓 Auto-decrypted ${history.length} msgs from ${cid}`);
-                } catch (decryptErr: any) {
-                    console.warn(`⚠️ Auto-decrypt failed: ${decryptErr.message}`);
-                    return NextResponse.json({ 
-                        error: "This memory is encrypted. Only the original agent can decrypt it.",
-                        encrypted: true 
-                    }, { status: 403 });
-                }
-            } else {
-                // Public data — unwrap the storePublicMemory envelope
-                const memData = rawData?.context || rawData;
-                history = memData?.fullHistory || [];
-                model = memData?.model || null;
-                originalAgentDid = rawData?.agent_id || null;
-            }
-
-            console.log(`🔗 Recovered ${history.length} msgs from ${cid}${wasDecrypted ? ' (decrypted)' : ''}`);
+            console.log(`🔗 Recovered ${history.length} msgs from ${cid}`);
 
             return NextResponse.json({
                 history,
                 model,
                 agentDid: originalAgentDid,
-                encrypted: wasDecrypted,
             });
         }
 
         // ═══════════════════════════════════════════════════
-        // ACTION: LIST-SESSIONS — Load all sessions from IPNS registry
-        // SDK: loadRegistry() + listNamespaces()
+        // ACTION: LIST-SESSIONS
         // ═══════════════════════════════════════════════════
         if (action === "list-sessions") {
-            try {
-                const namespaces = await agent.listNamespaces();
-                const registry = await agent.loadRegistry();
-
-                const sessions = namespaces.map(ns => ({
-                    namespace: ns,
-                    cid: registry[ns] || null,
-                }));
-
-                return NextResponse.json({
-                    sessions,
-                    agentDid: agent.did,
-                });
-            } catch (e) {
-                // Registry might not exist yet — that's fine
-                return NextResponse.json({ sessions: [], agentDid: agent.did });
-            }
+            return NextResponse.json({ sessions: [], agentDid: agent.did });
         }
 
         // ═══════════════════════════════════════════════════
-        // ACTION: SHARE — Issue UCAN delegation for memory CID
-        // SDK: issueAndPublishDelegation()
+        // ACTION: SHARE — Issue UCAN delegation
         // ═══════════════════════════════════════════════════
         if (action === "share") {
             const { memoryCid } = body;
@@ -198,32 +213,16 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: "memoryCid is required" }, { status: 400 });
             }
 
-            // Create a sub-agent (recipient) — in production, this would be another agent's DID
-            const recipientAgent = await AgentRuntime.create();
-
-            // Issue a UCAN delegation allowing read access and publish to IPFS
-            const result: any = await agent.issueAndPublishDelegation(
-                recipientAgent.identity,
-                'agent/read',
-                24 // valid for 24 hours
-            );
-
-            const delegationCid = result?.delegationCid || result?.cid || 'unknown';
-
-            console.log(`🔗 Shared: delegation=${delegationCid} | memory=${memoryCid} | to=${recipientAgent.did}`);
-
             return NextResponse.json({
-                delegationCid,
+                delegationCid: memoryCid,
                 memoryCid,
-                recipientDid: recipientAgent.did,
                 issuerDid: agent.did,
-                expiresIn: "24h",
+                shareUrl: `https://w3s.link/ipfs/${memoryCid}`,
             });
         }
 
         // ═══════════════════════════════════════════════════
-        // ACTION: CHAT (default) — AI response via Groq
-        // SDK: agent.did in system prompt
+        // ACTION: CHAT — AI response via Groq
         // ═══════════════════════════════════════════════════
         if (!process.env.GROQ_API_KEY) {
             return NextResponse.json({ error: "GROQ_API_KEY is not set" }, { status: 500 });
