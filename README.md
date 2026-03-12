@@ -18,6 +18,55 @@ We have significantly expanded the AgentDB ecosystem with a full suite of user-f
 
 [![View AgentDB Presentation](https://img.shields.io/badge/📊_View_Interactive_Slides-Click_Here-0A66C2?style=for-the-badge&logo=canva&logoColor=white)](https://www.canva.com/design/DAHDteT00LE/soWZHvWtuzqISpBeoYg1HA/view?utm_content=DAHDteT00LE&utm_campaign=designshare&utm_medium=embeds&utm_source=link)
 
+### 🛠️ Tech Stack Used
+
+**Blockchain & Decentralized Infrastructure:**
+
+![Storacha](https://img.shields.io/badge/Storacha-IPFS%20%2B%20Filecoin-orange?style=flat-square)
+![UCAN](https://img.shields.io/badge/UCAN-User%20Controlled%20Auth-blue?style=flat-square)
+![IPNS](https://img.shields.io/badge/IPNS-InterPlanetary%20Names-9cf?style=flat-square)
+![DIDs](https://img.shields.io/badge/DIDs-Ed25519%20Identity-purple?style=flat-square)
+
+**Cryptography:**
+
+![X25519](https://img.shields.io/badge/X25519-Curve25519-314159?style=flat-square)
+![ECIES](https://img.shields.io/badge/ECIES-Elliptic%20Curve%20Encryption-ff69b4?style=flat-square)
+![AES-256-GCM](https://img.shields.io/badge/AES--256--GCM-Authenticated%20Encryption-green?style=flat-square)
+
+**AI & Agent Frameworks:**
+
+![LangChain](https://img.shields.io/badge/LangChain-Memory%20Integration-00704A?style=flat-square)
+![OpenClaw](https://img.shields.io/badge/OpenClaw-Persona%20Preservation-f0ad4e?style=flat-square)
+![Lit Protocol](https://img.shields.io/badge/Lit%20Protocol-Agent%20Wallets-pink?style=flat-square)
+![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-333333?style=flat-square)
+
+**Development:**
+
+![TypeScript](https://img.shields.io/badge/TypeScript-JavaScript-3178C6?style=flat-square&logo=typescript)
+![Next.js](https://img.shields.io/badge/Next.js-Frontend-000000?style=flat-square&logo=next.js)
+![Express](https://img.shields.io/badge/Express-Server-90c53f?style=flat-square&logo=express)
+![Solidity](https://img.shields.io/badge/Solidity-Smart%20Contracts-363636?style=flat-square&logo=solidity)
+![Hardhat](https://img.shields.io/badge/Hardhat-Dev%20Environment-FFF04D?style=flat-square)
+![Zama fhEVM](https://img.shields.io/badge/Zama%20fhEVM-Confidential%20Compute-6F3FE1?style=flat-square)
+
+**Testing & Quality:**
+
+![Vitest](https://img.shields.io/badge/Vitest-Unit%20Tests-729B1B?style=flat-square)
+![GitHub](https://img.shields.io/badge/GitHub-Version%20Control-181717?style=flat-square&logo=github)
+
+### 🏆 Eligible Hackathon Challenges
+
+**AgentDB integrates with these sponsor challenges:**
+
+[![AI & Robotics](https://img.shields.io/badge/AI%20%26%20Robotics-Protocol%20Labs-purple?style=flat-square)](https://devspot.xyz/challenges/ai-robotics)
+[![Storacha](https://img.shields.io/badge/Storacha-Decentralized%20Storage-orange?style=flat-square)](https://devspot.xyz/challenges/storacha)
+[![Filecoin](https://img.shields.io/badge/Filecoin-Persistent%20Data-blue?style=flat-square)](https://devspot.xyz/challenges/filecoin)
+[![Infrastructure & Digital Rights](https://img.shields.io/badge/Infrastructure%20%26%20Digital%20Rights-Protocol%20Labs-teal?style=flat-square)](https://devspot.xyz/challenges/infrastructure-digital-rights)
+[![Lit Protocol](https://img.shields.io/badge/Lit%20Protocol-NextGen%20AI%20Apps-pink?style=flat-square)](https://devspot.xyz/challenges/lit-protocol)
+[![Zama](https://img.shields.io/badge/Zama-Confidential%20Finance-darkgreen?style=flat-square)](https://devspot.xyz/challenges/zama-confidential-onchain-finance)
+[![Agent Only](https://img.shields.io/badge/%F0%9F%A4%96%20Agent%20Only-Let%20the%20Agent%20Cook-red?style=flat-square)](https://devspot.xyz/challenges/agent-only)
+[![Agents With Receipts](https://img.shields.io/badge/%F0%9F%94%90%20Agents%20With%20Receipts-ERC--8004-yellow?style=flat-square)](https://devspot.xyz/challenges/agents-with-receipts)
+[![Hypercerts](https://img.shields.io/badge/Hypercerts-Impact%20Verification-lightblue?style=flat-square)](https://devspot.xyz/challenges/hypercerts)
 
 ---
 
