@@ -4,15 +4,7 @@
 
 ---
 
-## � Interactive Presentation
-
-[![AgentDB Presentation](https://img.shields.io/badge/View%20on%20Canva-Click%20Here-blue?style=for-the-badge&logo=canva)](https://www.canva.com/design/DAHDteT00LE/soWZHvWtuzqISpBeoYg1HA/view)
-
-**Slides include**: Problem → Solution → Architecture → Use Cases → Roadmap
-
----
-
-## �🚀 Version 1.5.0 Now Live: Full Agentic Sovereignty
+## � Version 1.5.0 Now Live: Full Agentic Sovereignty
 
 We have significantly expanded the AgentDB ecosystem with a full suite of user-facing and developer-centric tools:
 
