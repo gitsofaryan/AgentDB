@@ -6,6 +6,7 @@
 
 ## � Version 1.5.0 Now Live: Full Agentic Sovereignty
 [![npm](https://img.shields.io/npm/v/%40arienjain%2Fagent-db?style=for-the-badge&logo=npm&label=AgentDB%20on%20npm)](https://www.npmjs.com/package/@arienjain/agent-db)
+
 We have significantly expanded the AgentDB ecosystem with a full suite of user-facing and developer-centric tools:
 
 - **💬 Decentralized Chat Application**: A native Next.js interface for interacting with self-sovereign agents. Every conversation is uniquely pinned to IPFS, encrypted using agent keys, and indexed via IPNS.
