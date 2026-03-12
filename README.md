@@ -14,6 +14,12 @@ We have significantly expanded the AgentDB ecosystem with a full suite of user-f
 - **🔒 Zero-Trust Delegation**: Integrated UCAN sharing directly into the UI, enabling one-click context handoffs between agents entirely through the decentralized web.
 
 ---
+## Readme
+
+[![View AgentDB Presentation](https://img.shields.io/badge/📊_View_Interactive_Slides-Click_Here-0A66C2?style=for-the-badge&logo=canva&logoColor=white)](https://www.canva.com/design/DAHDteT00LE/soWZHvWtuzqISpBeoYg1HA/view?utm_content=DAHDteT00LE&utm_campaign=designshare&utm_medium=embeds&utm_source=link)
+
+
+---
 
 ## 🌎 The Vision: Solving the "AI Lobotomy"
 
