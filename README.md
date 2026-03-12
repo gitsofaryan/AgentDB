@@ -4,7 +4,7 @@
 
 ---
 
-## � Version 1.5.0 Now Live: Full Agentic Sovereignty
+## � Version 1.5.2 Now Live: Full Agentic Sovereignty
 [![npm](https://img.shields.io/npm/v/%40arienjain%2Fagent-db?style=for-the-badge&logo=npm&label=AgentDB%20on%20npm)](https://www.npmjs.com/package/@arienjain/agent-db)
 
 We have significantly expanded the AgentDB ecosystem with a full suite of user-facing and developer-centric tools:
